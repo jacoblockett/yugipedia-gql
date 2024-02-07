@@ -81,7 +81,10 @@ The result of the above should look a little something like this:
 {
     "data": {
         "card": {
-            "error": null,
+            "error": { 
+                "code": 200, 
+                "message": "OK"
+            },
             "name": {
                 "english": "Dark Magician",
                 "japanese": {
@@ -143,6 +146,8 @@ As alluded to in a note above, this wrapper will make an attempt to resolve redi
 ## Errors
 
 Errors come in two varieties - Those produced by the Yugipedia API and those produced by malformed GraphQL query syntax. Both will populate the error object on the type it was called on in the `{ error: { code: number, message: string } }` format. Codes to be aware of:
+
+__`200`__ : OK - The request produced no errors and the results shouldn't be malformed.
 
 __`400`__ : Bad Request - The request you made doesn't match the type of data you asked for. This might happen if the page name you provided for a card query matches an archetype page, for example.
 
