@@ -7,9 +7,7 @@ import sleep from "./utils/sleep.js"
 
 class Yugipedia {
 	/**
-	 * Creates a Yugipedia API entity capable of performing basic operations. Initializing the Yugipedia class object
-	 * more or less only affects internal operations on the API's side rather than the results you receive by using
-	 * its functions. It is, however, customizable as you see fit.
+	 * Creates a Yugipedia API entity capable of performing basic operations.
 	 *
 	 * @link https://yugipedia.com/wiki/Yugipedia:API
 	 *
