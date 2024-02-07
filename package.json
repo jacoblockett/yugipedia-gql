@@ -1,6 +1,6 @@
 {
 	"name": "yugipedia-gql",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "A GraphQL wrapper around the MediaWiki API for Yugipedia. Designed to make the queries and results more intuitive and simple.",
 	"main": "index.js",
 	"type": "module",
