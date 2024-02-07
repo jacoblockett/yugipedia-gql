@@ -153,7 +153,7 @@ __`400`__ : Bad Request - The request you made doesn't match the type of data yo
 
 __`404`__ : Not Found - The request you made doesn't actually exist. This might be a spelling error or a lack of resources on the Yugipedia server matching your request.
 
-__`500`__ : Server Error - This are used specifically for GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
+__`500`__ : Server Error - This is used specifically for GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
 
 ## Schema
 
