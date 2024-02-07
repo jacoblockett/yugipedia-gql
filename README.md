@@ -152,7 +152,7 @@ __`500`__ : Server Error - This are used specifically for GraphQL syntax errors.
 
 ## Schema
 
-Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here]().
+Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.md).
 
 ### ___`Type: Card(name: String!)`___
 
