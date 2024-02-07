@@ -198,7 +198,7 @@ ___
 
 ### ___`Type: Set(name: String!)`___
 
-* __`Set.code <ProductCode>`__ - the product code for this set (e.g. LOB, KICO, etc.)
+* __`Set.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
 * __`Set.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
 * __`Set.error <Error>`__ - a generic error object recommended to tag along with every query
 * __`Set.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
