@@ -193,18 +193,18 @@ ___
 
 ### ___`Type: Set(name: String!)`___
 
-* __`Set.code <ProductCode>`__: the product code for this set (e.g. LOB, KICO, etc.)
-* __`Set.coverCards <[Card!]>`__: the cards that appear on the packaging for this set
-* __`Set.error <Error>`__: a generic error object recommended to tag along with every query
-* __`Set.format <String>`__: the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
-* __`Set.image <String>`__: the main image used in the wiki for this set
-* __`Set.konamiID <SetKonamiDatabaseID>`__: the database ID used by Konami for this set
-* __`Set.mediums <[String!]>`__: the formats in which this set exists (ogc, tcg, games, etc.)
-* __`Set.name <LocaleText>`__: the name of the set
-* __`Set.page <WikiPage>`__: meta details on the wiki page for this set
-* __`Set.parent <Set>`__: the parent set to this set
-* __`Set.prefix <Prefix>`__: the prefixes for this set
-* __`Set.promotionalSeries <String>`__: the promotional series this set belongs to (core boosters, etc.)
-* __`Set.regionalPrefix <Prefix>`__: the region-specific prefixes for this set
-* __`Set.releaseDate <SetReleaseDate>`__: this set's release date
-* __`Set.type <String>`__: the type of set this set is (booster, tin, etc.)
+* __`Set.code <ProductCode>`__ - the product code for this set (e.g. LOB, KICO, etc.)
+* __`Set.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
+* __`Set.error <Error>`__ - a generic error object recommended to tag along with every query
+* __`Set.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
+* __`Set.image <String>`__ - the main image used in the wiki for this set
+* __`Set.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
+* __`Set.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
+* __`Set.name <LocaleText>`__ - the name of the set
+* __`Set.page <WikiPage>`__ - meta details on the wiki page for this set
+* __`Set.parent <Set>`__ - the parent set to this set
+* __`Set.prefix <Prefix>`__ - the prefixes for this set
+* __`Set.promotionalSeries <String>`__ - the promotional series this set belongs to (core boosters, etc.)
+* __`Set.regionalPrefix <Prefix>`__ - the region-specific prefixes for this set
+* __`Set.releaseDate <SetReleaseDate>`__ - this set's release date
+* __`Set.type <String>`__ - the type of set this set is (booster, tin, etc.)
