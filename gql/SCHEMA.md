@@ -26,10 +26,12 @@ type Card {
   mentions: [Card!]
   miscTags: [String!]
   name: LocaleText
+  packCode: String
   page: WikiPage
   password: String
   pendulum: Pendulum
   pro: AntiOrPro
+  rarity: String
   related: Related
   releases: [String!]
   stats: Stats
@@ -135,10 +137,15 @@ type Materials {
 
 type WikiPage {
   lastModified: String
-  name: String
+  name: WikiPageName
   semanticProperties: [String!]
   type: String
   url: String
+}
+
+type WikiPageName {
+  queried: String
+  destination: String
 }
 
 type Pendulum {
@@ -176,6 +183,7 @@ type Status {
 }
 
 type Set {
+  cards: [Card!]
   code: ProductCode
   coverCards: [Card!]
   error: Error
