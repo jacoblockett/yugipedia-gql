@@ -13,7 +13,7 @@ import chunk from "lodash.chunk"
 // page exists or not (for error messages)
 
 export const titlesQuery = async (pageTitles, headers) => {
-	const titleGroups = chunk(pageTitles, 500)
+	const titleGroups = chunk(pageTitles, 50)
 	const response = { redirects: [], pages: {} }
 
 	for (let i = 0; i < titleGroups.length; i++) {
