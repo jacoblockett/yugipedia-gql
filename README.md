@@ -4,7 +4,31 @@ A GraphQL wrapper around the [MediaWiki API](https://en.wikipedia.org/wiki/Media
 
 ## Installation
 
+You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your computer. It's best to have the most up-to-date LTS version installed. I typically test with the current version, but there's nothing fancy in here that shouldn't work for LTS. For reference, the Node version I used during testing was 21.2.0.
+
+Once you have that installed, it should install NPM as a command line interface by default.
+
+Anyway, you can verify both NodeJS and NPM are installed properly by running the following command in your terminal/emulator of choice:
+
 ```shell
+node -v
+npm -v
+
+# => v##.##.##
+# => ##.##.##
+```
+
+All that's left to do is to cd into your directory of choice and create a new npm project:
+
+```shell
+cd "YOUR\\PREFERED\\DIRECTORY"
+
+touch index.js
+
+npm init -y
+
+npm pkg set type="module"
+
 npm i yugipedia-gql
 ```
 
@@ -155,6 +179,8 @@ __`404`__ : Not Found - The request you made doesn't actually exist. This might 
 
 __`500`__ : Server Error - This is used specifically for GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
 
+> ⚠️ If you happen upon an error code or weird message that doesn't really fit these descriptions, please create an issue about it. In the issue, make sure to provide your relevant code that caused the error so I can reproduce it, and a screenshot or copy/pasta of what I should expect to see.
+
 ## Schema
 
 Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.md).
@@ -179,11 +205,13 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.mediums <[String!]>`__ - the formats in which this card exists (ogc, tcg, games, etc.) (different with releases in that this is more general)
 * __`Card.mentions <[Card!]>`__ - the cards mentioned by this card
 * __`Card.miscTags <[String!]>`__ - tags/search properties that don't have their own specific category
-* __`Card.name <CardText>`__ - the name of the card
+* __`Card.name <CardText>`__ - the name of this card
+* __`Card.packCode <String>`__ - the pack code of this card (only available when queried through a set)
 * __`Card.page <WikiPage>`__ - meta details on the wiki page for this card
 * __`Card.password <String>`__ - the password of this card
 * __`Card.pendulum <Pendulum>`__ - pendulum details on this card
 * __`Card.pro <AntiOrPro>`__ - cards that are supported by this card
+* __`Card.rarity <String>`__ - the rarity of this card (only available when queried through a set)
 * __`Card.related <Related>`__ - page names representing pages that are related to this card
 * __`Card.releases <[String!]>`__ - the specific release titles this card is associated with (different with mediums in that this is more specific)
 * __`Card.stats <Stats>`__ - stats on this card, such as attack, defense, level, etc.
@@ -198,6 +226,7 @@ ___
 
 ### ___`Type: Set(name: String!)`___
 
+* __`Set.cards <[Card!]>`__ - the cards that are part of this set's setlist (be careful, this does not discriminate based on region and may take a long time to execute. For reference, LOB clocked in at just under 2.5 minutes to complete. Cards will be separated by rarity and regional pack code.)
 * __`Set.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
 * __`Set.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
 * __`Set.error <Error>`__ - a generic error object recommended to tag along with every query
@@ -205,7 +234,7 @@ ___
 * __`Set.image <String>`__ - the main image used in the wiki for this set
 * __`Set.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
 * __`Set.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
-* __`Set.name <LocaleText>`__ - the name of the set
+* __`Set.name <LocaleText>`__ - the name of this set
 * __`Set.page <WikiPage>`__ - meta details on the wiki page for this set
 * __`Set.parent <Set>`__ - the parent set to this set
 * __`Set.prefix <Prefix>`__ - the prefixes for this set
