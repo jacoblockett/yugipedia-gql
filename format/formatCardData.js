@@ -11,7 +11,7 @@ const formatCardData = async data => {
 	const po = keysToCamelCase(data.printouts) // po, for PrintOuts
 
 	const pageDetails = {
-		name: po.pageName[0],
+		name: { queried: data.rpno.original, destination: data.rpno.redirected },
 		type: po.pageType?.[0] && po.pageType[0].replace(/\s+page$/i, ""),
 		url: data.fullurl ?? "",
 		lastModified: po.modificationDate?.[0]?.timestamp
@@ -213,6 +213,7 @@ const formatCardData = async data => {
 			portuguese: po.portugueseName?.[0],
 			spanish: po.spanishName?.[0],
 		},
+		packCode: null,
 		page: pageDetails,
 		password: po.password?.[0],
 		pendulum: {
@@ -267,6 +268,7 @@ const formatCardData = async data => {
 			support: support.length ? support : null,
 			archetype: archetypeSupport.length ? archetypeSupport : null,
 		},
+		rarity: null,
 		related: {
 			all: allFamily.length ? allFamily : null,
 			direct: direct.length ? direct : null,

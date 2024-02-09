@@ -14,13 +14,16 @@ const getSetsByName = async (names, printouts, { userAgent }) => {
 		printouts,
 	)
 
-	return names.map(({ original, redirected }, i) => {
-		const setData = data.find(({ fulltext }) => redirected === fulltext)
+	return await Promise.all(
+		names.map(async ({ original, redirected }, i) => {
+			const setData = data.find(({ fulltext }) => redirected === fulltext)
 
-		if (!setData) return { error: { code: 404, message: `Page for <${original}> was not found.` } }
+			if (!setData)
+				return { error: { code: 404, message: `Page for <${original}> was not found.` } }
 
-		return formatSetData(setData)
-	})
+			return formatSetData({ ...setData, rpno: { original, redirected } }) // rpno - redirected page name object
+		}),
+	)
 }
 
 export default getSetsByName

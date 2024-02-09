@@ -14,13 +14,16 @@ const getCardsByName = async (names, printouts, { userAgent }) => {
 		printouts,
 	)
 
-	return names.map(({ original, redirected }, i) => {
-		const cardData = data.find(({ fulltext }) => redirected === fulltext)
+	return await Promise.all(
+		names.map(async ({ original, redirected }, i) => {
+			const cardData = data.find(({ fulltext }) => redirected === fulltext)
 
-		if (!cardData) return { error: { code: 404, message: `Page for <${original}> was not found.` } }
+			if (!cardData)
+				return { error: { code: 404, message: `Page for <${original}> was not found.` } }
 
-		return formatCardData(cardData)
-	})
+			return formatCardData({ ...cardData, rpno: { original, redirected } }) // rpno - redirected page name object
+		}),
+	)
 }
 
 export default getCardsByName

@@ -11,12 +11,12 @@ import {
 import parseRequestedFields from "../parse/parseCardFields.js"
 import getCardsByName from "../queries/getCardsByName.js"
 import {
+	getCardsBySetNameResolver,
 	getManyCardsByNameResolver,
 	getManySetsByNameResolver,
 	getOneCardByNameResolver,
 	getOneSetByNameResolver,
 } from "./resolvers.js"
-import askargs from "../api/askargs.js"
 
 const NonNullInnerList = scalarType => new GraphQLList(new GraphQLNonNull(scalarType))
 
@@ -329,10 +329,18 @@ const WikiPage = new GraphQLObjectType({
 	name: "WikiPage",
 	fields: () => ({
 		lastModified: { type: GraphQLString },
-		name: { type: GraphQLString },
-		semanticProperties: { type: NonNullInnerList(GraphQLString) },
+		name: { type: WikiPageName },
+		semanticProperties: { type: NonNullInnerList(GraphQLString) }, // need to implement
 		type: { type: GraphQLString },
 		url: { type: GraphQLString },
+	}),
+})
+
+const WikiPageName = new GraphQLObjectType({
+	name: "WikiPageName",
+	fields: () => ({
+		queried: { type: GraphQLString },
+		destination: { type: GraphQLString },
 	}),
 })
 
@@ -362,10 +370,12 @@ const Card = new GraphQLObjectType({
 		},
 		miscTags: { type: NonNullInnerList(GraphQLString) },
 		name: { type: LocaleText },
+		packCode: { type: GraphQLString },
 		page: { type: WikiPage },
 		password: { type: GraphQLString },
 		pendulum: { type: Pendulum },
 		pro: { type: AntiOrPro },
+		rarity: { type: GraphQLString },
 		related: { type: Related },
 		releases: { type: NonNullInnerList(GraphQLString) },
 		stats: { type: Stats },
@@ -386,14 +396,9 @@ const YGOSet = new GraphQLObjectType({
 		cards: {
 			type: NonNullInnerList(Card),
 			resolve: async ({ page }, _, context, info) => {
-				const pageName = page.name
-				const allCardsInSet = await askargs(
-					context.userAgent,
-					["-Has subobject.Set page::Battle of Chaos"],
-					["Rarity", "Card number"],
-				)
+				const pageName = page.name.destination
 
-				// await getManyCardsByNameResolver(coverCards ?? [], context, info)
+				return await getCardsBySetNameResolver(pageName, context, info)
 			},
 		},
 		code: { type: ProductCode },
