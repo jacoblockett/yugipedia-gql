@@ -13,12 +13,12 @@ const findRedirectTails = async (pageNames, userAgent) => {
 
 	const redirectsFound = data.redirects
 
-	if (!redirectsFound) return pageNames
-
 	return pageNames.map(name => {
 		const redirectTwin = redirectsFound.find(redirect => redirect.from === name)
-
-		return redirectTwin ? redirectTwin.to : name
+		return {
+			original: name,
+			redirected: redirectTwin?.to ?? name,
+		}
 	})
 }
 

@@ -16,6 +16,7 @@ import {
 	getOneCardByNameResolver,
 	getOneSetByNameResolver,
 } from "./resolvers.js"
+import askargs from "../api/askargs.js"
 
 const NonNullInnerList = scalarType => new GraphQLList(new GraphQLNonNull(scalarType))
 
@@ -382,6 +383,19 @@ const Card = new GraphQLObjectType({
 const YGOSet = new GraphQLObjectType({
 	name: "Set",
 	fields: () => ({
+		cards: {
+			type: NonNullInnerList(Card),
+			resolve: async ({ page }, _, context, info) => {
+				const pageName = page.name
+				const allCardsInSet = await askargs(
+					context.userAgent,
+					["-Has subobject.Set page::Battle of Chaos"],
+					["Rarity", "Card number"],
+				)
+
+				// await getManyCardsByNameResolver(coverCards ?? [], context, info)
+			},
+		},
 		code: { type: ProductCode },
 		coverCards: {
 			type: NonNullInnerList(Card),

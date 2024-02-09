@@ -8,12 +8,16 @@ const getCardsByName = async (names, printouts, { userAgent }) => {
 
 	names = await findRedirectTails(names, userAgent)
 
-	const data = await askargs({ "User-Agent": userAgent }, names, printouts)
+	const data = await askargs(
+		{ "User-Agent": userAgent },
+		names.map(name => name.redirected),
+		printouts,
+	)
 
-	return names.map((name, i) => {
-		const cardData = data.find(({ fulltext }) => name === fulltext)
+	return names.map(({ original, redirected }, i) => {
+		const cardData = data.find(({ fulltext }) => redirected === fulltext)
 
-		if (!cardData) return { error: { code: 404, message: `Page for <${name}> was not found.` } }
+		if (!cardData) return { error: { code: 404, message: `Page for <${original}> was not found.` } }
 
 		return formatCardData(cardData)
 	})
