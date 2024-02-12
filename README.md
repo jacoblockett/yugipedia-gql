@@ -8,7 +8,7 @@ You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your c
 
 Once you have that installed, it should install NPM as a command line interface by default.
 
-Anyway, you can verify both NodeJS and NPM are installed properly by running the following command in your terminal/emulator of choice:
+You can verify both NodeJS and NPM are installed properly by running the following command in your terminal/emulator of choice:
 
 ```shell
 node -v
