@@ -1,8 +1,13 @@
 import askargs from "../api/askargs.js"
+import { scrapeSetCardLists } from "../api/scrape.js"
 import parseCardFields from "../parse/parseCardFields.js"
+import parseSetCardListFields from "../parse/parseSetCardListFields.js"
 import parseSetFields from "../parse/parseSetFields.js"
 import getCardsByName from "../queries/getCardsByName.js"
 import getSetsByName from "../queries/getSetsByName.js"
+
+import graphqlFields from "graphql-fields"
+import addKeyTraceToObject from "../utils/addKeyTraceToObject.js"
 
 export const getOneCardByNameResolver = async (name, context, info) => {
 	const printouts = parseCardFields(info)
@@ -19,36 +24,42 @@ export const getManyCardsByNameResolver = async (names, context, info) => {
 }
 
 export const getCardsBySetNameResolver = async (setName, context, info) => {
-	const allCardsInSet = await askargs(
-		context.userAgent,
-		[`-Has subobject.Set page::${setName}`],
-		["Rarity", "Card number"],
-	)
-	const cardNumbers = allCardsInSet.map(result => result.printouts["Card number"][0]).sort()
+	const allCardsInSet = await scrapeSetCardLists(setName)
+	const languages = parseSetCardListFields(info)
 
-	const printouts = parseCardFields(info)
-	const data = await getCardsByName(cardNumbers, printouts, context)
-	const appendedData = data.reduce((acc, card) => {
-		const twin = allCardsInSet.find(
-			scard => scard.printouts["Card number"][0] === card.page.name.queried,
-		)
-		const rarities = twin.printouts.Rarity.map(({ fulltext }) => fulltext)
+	const cards = {}
 
-		for (let i = 0; i < rarities.length; i++) {
-			const rarity = rarities[i]
-			const appendedCard = {
-				...card,
-				rarity,
-				packCode: card.page.name.queried,
-			}
+	for (let i = 0; i < languages.length; i++) {
+		const [language, { trace, requestedCardData }] = languages[i]
+		const cardChunk = allCardsInSet[language]
 
-			acc.push(appendedCard)
+		if (!cardChunk) {
+			addKeyTraceToObject(cards, trace, [])
+			continue
 		}
 
-		return acc
-	}, [])
+		const printouts = parseCardFields(requestedCardData, true)
+		const cardNumbers = cardChunk.map(chunk => chunk.cardNumber)
+		const cardData = await getCardsByName(cardNumbers, printouts, context)
+		const appendedCardData = cardData.reduce((acc, card) => {
+			const { cardNumber, notes, print, rarity } = cardChunk.find(
+				chunk => chunk.cardNumber === card.page.name.queried,
+			)
+			const appendedCard = {
+				...card,
+				packCode: cardNumber,
+				printNotes: notes,
+				printType: print,
+				rarity,
+			}
 
-	return appendedData
+			return [...acc, appendedCard]
+		}, [])
+
+		addKeyTraceToObject(cards, trace, appendedCardData)
+	}
+
+	return cards
 }
 
 export const getOneSetByNameResolver = async (name, context, info) => {
