@@ -7,11 +7,6 @@ import chunk from "lodash.chunk"
 
 // https://yugipedia.com/api.php?action=help&modules=query
 
-// Currently only using this to find redirected titles. Askargs auto-redirects, sure,
-// but unfortunately validating if a page name has redirected through that api doesn't
-// seem to be a thing, and I need to's and from's in order to validate if a user-given
-// page exists or not (for error messages)
-
 export const titlesQuery = async (pageTitles, headers) => {
 	const titleGroups = chunk(pageTitles, 50)
 	const response = { redirects: [], pages: {} }
@@ -39,4 +34,72 @@ export const titlesQuery = async (pageTitles, headers) => {
 	}
 
 	return response
+}
+
+export const categoryMembersQuery = async (category, headers, options) => {
+	options = {
+		allowRedirects: options.allowRedirects !== void 0 ? options.allowRedirects : true,
+		maxResults: options.maxResults > 0 ? options.maxResults : Infinity,
+		categoryTypes:
+			Array.isArray(options.categoryTypes) &&
+			options.categoryTypes.every(type => typeof type === "string")
+				? options.categoryTypes
+				: ["page", "subcat", "file"],
+	}
+	const pageTitles = new Set()
+
+	let cmcontinue = ""
+
+	while (true) {
+		const { data } = await get(ENDPOINT, {
+			headers,
+			params: {
+				action: "query",
+				list: "categorymembers",
+				cmtitle: `Category:${category}`,
+				cmlimit: 500,
+				cmcontinue,
+				cmtype: options.categoryTypes.join("|"),
+				format: "json",
+			},
+		})
+
+		const members = data?.query?.categorymembers
+
+		// Something went wrong if this break happens
+		if (!members?.length) break
+
+		for (let i = 0; i < members.length; i++) {
+			const { title } = members[i]
+
+			if (title.startsWith("Category:") && options.allowRedirects) {
+				const categoryTitle = title.replace("Category:", "")
+				const recursed = await categoryMembersQuery(categoryTitle, headers, {
+					allowRedirects: true,
+					maxResults: options.maxResults,
+					categoryTypes: options.categoryTypes,
+					_currentSize: pageTitles.size,
+				})
+
+				for (let j = 0; j < recursed.length; j++) {
+					const recursedTitle = recursed[j]
+
+					pageTitles.add(recursedTitle)
+				}
+			} else {
+				pageTitles.add(title)
+			}
+		}
+
+		if (!data.continue) break
+		if (pageTitles.size + (options._currentSize ?? 0) >= options.maxResults) break
+
+		cmcontinue = data.continue.cmcontinue
+	}
+
+	const pageTitlesArray = [...pageTitles]
+
+	if (pageTitlesArray.length > options.maxResults) pageTitlesArray.length = options.maxResults
+
+	return pageTitlesArray
 }
