@@ -18,7 +18,7 @@ npm -v
 # => ##.##.##
 ```
 
-All that's left to do is to cd into your directory of choice and create a new npm project:
+Finally, cd into your directory of choice and create a new npm project:
 
 ```shell
 cd "YOUR\\PREFERED\\DIRECTORY"
@@ -36,7 +36,7 @@ npm i yugipedia-gql
 
 General understanding of the [GraphQL language](https://graphql.org/learn) is highly recommended before attempting to use this API wrapper.
 
-> ___Note___ - There is no need to roll your own rate limiter - all queries are rate limited to one page per second maximum. That means that no matter how many queries need to be performed, total wait time will be `Number of Queries × Number of Pages Per Query × 2 (Mandatory Redirect Query Check) × 1 Second + Time to Complete Each Query`. It does _not_ mean that queries will wait for each other to finish before starting the next one, just that they will wait a minimum of one second after the most recent query was fired. This is to align with [the wishes of the API devs. (See: Request limit)](https://yugipedia.com/wiki/Yugipedia:API).
+> ___Note___ - There is no need to roll your own rate limiter - all queries are rate limited to one page per second maximum to align with [the wishes of the API devs. (See: Request limit)](https://yugipedia.com/wiki/Yugipedia:API).
 
 ### Signature
 
@@ -165,11 +165,11 @@ ___
 
 ## Redirects
 
-As alluded to in a note above, this wrapper will make an attempt to resolve redirects as best as possible. That means querying the set for [`"LOB"`](https://yugipedia.com/wiki/LOB) and [`"Legend of Blue Eyes White Dragon"`](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) should yield the same page. It's not perfect, though, and relies on the API's internal ability to resolve redirects so it's best to try to make sure names you provide lead to an active page before querying for it if you're able to beforehand.
+This wrapper will make an attempt to resolve redirects as best as possible. That means querying the set for [`"LOB"`](https://yugipedia.com/wiki/LOB) and [`"Legend of Blue Eyes White Dragon"`](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) should yield the same page. It's not perfect, though, and relies on the API's internal ability to resolve redirects so it's best to try to make sure names you provide lead to an active page before querying for it if you're able to beforehand.
 
 ## Errors
 
-Errors come in two varieties - Those produced by the Yugipedia API and those produced by malformed GraphQL query syntax. Both will populate the error object on the type it was called on in the `{ error: { code: number, message: string } }` format. Codes to be aware of:
+Errors come in two varieties - Those produced by the Yugipedia API and those produced by malformed GraphQL query syntax. Both will populate the error object on the type it was called on in the `{ error: { code: number, message: string } }` format. It is highly recommended to include the error object in every query you make - results may be confusing otherwise. Codes to be aware of:
 
 __`200`__ : OK - The request produced no errors and the results shouldn't be malformed.
 
@@ -177,7 +177,7 @@ __`400`__ : Bad Request - The request you made doesn't match the type of data yo
 
 __`404`__ : Not Found - The request you made doesn't actually exist. This might be a spelling error or a lack of resources on the Yugipedia server matching your request.
 
-__`500`__ : Server Error - This is used specifically for GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
+__`500`__ : Server Error - This is expected to only be GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
 
 > ⚠️ If you happen upon an error code or weird message that doesn't really fit these descriptions, please create an issue about it. In the issue, make sure to provide your relevant code that caused the error so I can reproduce it, and a screenshot or copy/pasta of what I should expect to see.
 
@@ -185,7 +185,7 @@ __`500`__ : Server Error - This is used specifically for GraphQL syntax errors. 
 
 Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.md).
 
-### ___`Type: Card(name: String!)`___
+### ___`card(name: String!): Card <RootQuery>`___
 
 * __`Card.actions <Actions>`__ - specific actions this card takes
 * __`Card.anti <AntiOrPro>`__ - cards that are targeted by this card
@@ -206,14 +206,16 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.mentions <[Card!]>`__ - the cards mentioned by this card
 * __`Card.miscTags <[String!]>`__ - tags/search properties that don't have their own specific category
 * __`Card.name <CardText>`__ - the name of this card
-* __`Card.packCode <String>`__ - the pack code of this card (only available when queried through a set)
 * __`Card.page <WikiPage>`__ - meta details on the wiki page for this card
 * __`Card.password <String>`__ - the password of this card
 * __`Card.pendulum <Pendulum>`__ - pendulum details on this card
+* __`Card.printNotes <String>`__ - any notes about the print of this card (like alt art, etc. - only available when queried through a set)
+* __`Card.printType <String>`__ - the print type of this card (new, reprint, etc. - only available when queried through a set)
 * __`Card.pro <AntiOrPro>`__ - cards that are supported by this card
 * __`Card.rarity <String>`__ - the rarity of this card (only available when queried through a set)
 * __`Card.related <Related>`__ - page names representing pages that are related to this card
 * __`Card.releases <[String!]>`__ - the specific release titles this card is associated with (different with mediums in that this is more specific)
+* __`Card.setCode <String>`__ - the set code of this card (only available when queried through a set)
 * __`Card.stats <Stats>`__ - stats on this card, such as attack, defense, level, etc.
 * __`Card.status <Status>`__ - the status given a card in official formats (limited, forbidden, etc.)
 * __`Card.summonedBy <[Card!]>`__ - the cards that summon this card, typically used on token cards
@@ -224,21 +226,21 @@ Below are some helpful descriptions of various fields found on root types. The e
 
 ___
 
-### ___`Type: Set(name: String!)`___
+### ___`set(name: String!): YGOSet <RootQuery>`___
 
-* __`Set.cards <[Card!]>`__ - the cards that are part of this set's setlist (be careful, this does not discriminate based on region and may take a long time to execute. For reference, LOB clocked in at just under 2.5 minutes to complete. Cards will be separated by rarity and regional pack code.)
-* __`Set.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
-* __`Set.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
-* __`Set.error <Error>`__ - a generic error object recommended to tag along with every query
-* __`Set.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
-* __`Set.image <String>`__ - the main image used in the wiki for this set
-* __`Set.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
-* __`Set.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
-* __`Set.name <LocaleText>`__ - the name of this set
-* __`Set.page <WikiPage>`__ - meta details on the wiki page for this set
-* __`Set.parent <Set>`__ - the parent set to this set
-* __`Set.prefix <Prefix>`__ - the prefixes for this set
-* __`Set.promotionalSeries <String>`__ - the promotional series this set belongs to (core boosters, etc.)
-* __`Set.regionalPrefix <Prefix>`__ - the region-specific prefixes for this set
-* __`Set.releaseDate <SetReleaseDate>`__ - this set's release date
-* __`Set.type <String>`__ - the type of set this set is (booster, tin, etc.)
+* __`YGOSet.cards <CardList>`__ - the cards that are part of this set's setlist (previous versions of this field were quite slow but have now been heavily optimized. what took 2.5 minutes before for a query to LOB now takes about 15-20 seconds. have fun!)
+* __`YGOSet.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
+* __`YGOSet.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
+* __`YGOSet.error <Error>`__ - a generic error object recommended to tag along with every query
+* __`YGOSet.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
+* __`YGOSet.image <String>`__ - the main image used in the wiki for this set
+* __`YGOSet.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
+* __`YGOSet.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
+* __`YGOSet.name <LocaleText>`__ - the name of this set
+* __`YGOSet.page <WikiPage>`__ - meta details on the wiki page for this set
+* __`YGOSet.parent <Set>`__ - the parent set to this set
+* __`YGOSet.prefix <Prefix>`__ - the prefixes for this set
+* __`YGOSet.promotionalSeries <String>`__ - the promotional series this set belongs to (core boosters, etc.)
+* __`YGOSet.regionalPrefix <Prefix>`__ - the region-specific prefixes for this set
+* __`YGOSet.releaseDate <SetReleaseDate>`__ - this set's release date
+* __`YGOSet.type <String>`__ - the type of set this set is (booster, tin, etc.)
