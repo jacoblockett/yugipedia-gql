@@ -47,10 +47,10 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 			)
 			const appendedCard = {
 				...card,
-				packCode: cardNumber,
 				printNotes: notes,
 				printType: print,
 				rarity,
+				setCode: cardNumber,
 			}
 
 			return [...acc, appendedCard]

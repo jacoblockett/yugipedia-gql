@@ -2,7 +2,7 @@ import ClusterBrowser from "../utils/ClusterBrowser.js"
 import { INDEX_ENDPOINT, WIKI_ENDPOINT } from "../utils/constants.js"
 import limiter from "./limiter.js"
 
-const browser = new ClusterBrowser({ retryLimit: 3, timeout: 8000 })
+const browser = new ClusterBrowser({ retryLimit: 3 })
 
 // need to bind the browser's 'this' object to the runTaskOnList function because
 // wrapping it in the limiter santizes the 'this' object prior to running
@@ -19,7 +19,7 @@ export const scrapeSetCardLists = async setName => {
 
 				const url = `${INDEX_ENDPOINT}?title=${data}&mobileaction=toggle_view_desktop`
 
-				await page.goto(url, { waitUntil: "networkidle0" })
+				await page.goto(url, { waitUntil: "networkidle2" })
 				await page.waitForSelector(".set-navigation .set-navigation__row dl")
 
 				return await page.evaluate(async _ => {
@@ -108,6 +108,9 @@ export const scrapeSetCardLists = async setName => {
 			[setName],
 		)
 	)?.[0]?.data
+
+	if (!lists)
+		throw new Error(`Something went wrong during the scraping process and no data was found.`)
 
 	return lists
 }
