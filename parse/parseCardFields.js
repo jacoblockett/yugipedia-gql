@@ -1,7 +1,16 @@
 import graphqlFields from "graphql-fields"
 
-const parseCardFields = info => {
-	const fields = Object.entries(graphqlFields(info))
+/**
+ * Parses card fields based on GQL info request object passed by the requesting resolver.
+ *
+ * @param {any} info The GQL info object passed by the resolver in the schema
+ * @param {boolean} [DO_NOT_PARSE_INFO_OBJECT] If the info object is already parsed, pass true
+ * @returns
+ */
+const parseCardFields = (info, DO_NOT_PARSE_INFO_OBJECT) => {
+	const fields = DO_NOT_PARSE_INFO_OBJECT
+		? Object.entries(info)
+		: Object.entries(graphqlFields(info))
 	const po = new Set(["Modification date", "Page name", "Page type"]) // po for PrintOuts
 
 	for (let i = 0; i < fields.length; i++) {
