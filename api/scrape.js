@@ -111,5 +111,3 @@ export const scrapeSetCardLists = async setName => {
 
 	return lists
 }
-
-// need to split columns based on br tags (i think)
