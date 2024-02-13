@@ -1,5 +1,5 @@
 import ClusterBrowser from "../utils/ClusterBrowser.js"
-import { WIKI_ENDPOINT } from "../utils/constants.js"
+import { INDEX_ENDPOINT, WIKI_ENDPOINT } from "../utils/constants.js"
 import limiter from "./limiter.js"
 
 const browser = new ClusterBrowser({ retryLimit: 3, timeout: 8000 })
@@ -16,13 +16,11 @@ export const scrapeSetCardLists = async setName => {
 					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
 				)
 				await page.setViewport({ width: 1920, height: 1080 })
-				await page.goto(`${WIKI_ENDPOINT}/${data}`, {
-					waitUntil: "networkidle2",
-				})
 
-				const mainSelector = ".set-navigation .set-navigation__row dl"
+				const url = `${INDEX_ENDPOINT}?title=${data}&mobileaction=toggle_view_desktop`
 
-				await page.waitForSelector(mainSelector)
+				await page.goto(url, { waitUntil: "networkidle0" })
+				await page.waitForSelector(".set-navigation .set-navigation__row dl")
 
 				return await page.evaluate(async _ => {
 					return Array.from(
@@ -109,7 +107,7 @@ export const scrapeSetCardLists = async setName => {
 			},
 			[setName],
 		)
-	)[0].data
+	)?.[0]?.data
 
 	return lists
 }
