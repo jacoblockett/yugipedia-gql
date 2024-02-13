@@ -1,6 +1,7 @@
-# Schema for Yugipedia API GraphQL Wrapper
+schema {
+  query: RootQuery
+}
 
-```gql
 type RootQuery {
   card(name: String!): Card
   set(name: String!): Set
@@ -26,14 +27,16 @@ type Card {
   mentions: [Card!]
   miscTags: [String!]
   name: LocaleText
-  packCode: String
   page: WikiPage
   password: String
   pendulum: Pendulum
+  printNotes: String
+  printType: String
   pro: AntiOrPro
   rarity: String
   related: Related
   releases: [String!]
+  setCode: String
   stats: Stats
   status: Status
   summonedBy: [Card!]
@@ -183,7 +186,7 @@ type Status {
 }
 
 type Set {
-  cards: [Card!]
+  cards: CardList
   code: ProductCode
   coverCards: [Card!]
   error: Error
@@ -199,6 +202,41 @@ type Set {
   regionalPrefix: Prefix
   releaseDate: SetReleaseDate
   type: String
+}
+
+type CardList {
+  chinese: CardListChinese
+  english: CardListEnglish
+  french: CardListFrench
+  german: [Card]
+  italian: [Card]
+  portuguese: [Card]
+  spanish: [Card]
+  korean: [Card]
+  japanese: CardListJapanese
+}
+
+type CardListChinese {
+  simplified: [Card]
+  traditional: [Card]
+}
+
+type CardListEnglish {
+  asian: [Card]
+  australian: [Card]
+  european: [Card]
+  northAmerican: [Card]
+  primary: [Card]
+}
+
+type CardListFrench {
+  canadian: [Card]
+  primary: [Card]
+}
+
+type CardListJapanese {
+  asian: [Card]
+  primary: [Card]
 }
 
 type ProductCode {
@@ -285,4 +323,3 @@ type SetReleaseDateSpanish {
   latinAmerican: String
   primary: String
 }
-```

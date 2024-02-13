@@ -53,6 +53,56 @@ const CardImage = new GraphQLObjectType({
 	}),
 })
 
+const CardList = new GraphQLObjectType({
+	name: "CardList",
+	fields: () => ({
+		chinese: { type: CardListChinese },
+		english: { type: CardListEnglish },
+		french: { type: CardListFrench },
+		german: { type: new GraphQLList(Card) },
+		italian: { type: new GraphQLList(Card) },
+		portuguese: { type: new GraphQLList(Card) },
+		spanish: { type: new GraphQLList(Card) },
+		korean: { type: new GraphQLList(Card) },
+		japanese: { type: CardListJapanese },
+	}),
+})
+
+const CardListChinese = new GraphQLObjectType({
+	name: "CardListChinese",
+	fields: () => ({
+		simplified: { type: new GraphQLList(Card) },
+		traditional: { type: new GraphQLList(Card) },
+	}),
+})
+
+const CardListEnglish = new GraphQLObjectType({
+	name: "CardListEnglish",
+	fields: () => ({
+		asian: { type: new GraphQLList(Card) },
+		australian: { type: new GraphQLList(Card) },
+		european: { type: new GraphQLList(Card) },
+		northAmerican: { type: new GraphQLList(Card) },
+		primary: { type: new GraphQLList(Card) },
+	}),
+})
+
+const CardListFrench = new GraphQLObjectType({
+	name: "CardListFrench",
+	fields: () => ({
+		canadian: { type: new GraphQLList(Card) },
+		primary: { type: new GraphQLList(Card) },
+	}),
+})
+
+const CardListJapanese = new GraphQLObjectType({
+	name: "CardListJapanese",
+	fields: () => ({
+		asian: { type: new GraphQLList(Card) },
+		primary: { type: new GraphQLList(Card) },
+	}),
+})
+
 const ChineseTextObject = new GraphQLObjectType({
 	name: "ChineseTextObject",
 	fields: () => ({
@@ -370,14 +420,16 @@ const Card = new GraphQLObjectType({
 		},
 		miscTags: { type: NonNullInnerList(GraphQLString) },
 		name: { type: LocaleText },
-		packCode: { type: GraphQLString },
 		page: { type: WikiPage },
 		password: { type: GraphQLString },
 		pendulum: { type: Pendulum },
+		printNotes: { type: GraphQLString },
+		printType: { type: GraphQLString },
 		pro: { type: AntiOrPro },
 		rarity: { type: GraphQLString },
 		related: { type: Related },
 		releases: { type: NonNullInnerList(GraphQLString) },
+		setCode: { type: GraphQLString },
 		stats: { type: Stats },
 		status: { type: Status },
 		summonedBy: {
@@ -394,7 +446,7 @@ const YGOSet = new GraphQLObjectType({
 	name: "Set",
 	fields: () => ({
 		cards: {
-			type: NonNullInnerList(Card),
+			type: CardList,
 			resolve: async ({ page }, _, context, info) => {
 				const pageName = page.name.destination
 
