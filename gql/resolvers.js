@@ -41,20 +41,18 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 		const printouts = parseCardFields(requestedCardData, true)
 		const cardNumbers = cardChunk.map(chunk => chunk.cardNumber)
 		const cardData = await getCardsByName(cardNumbers, printouts, context)
-		const appendedCardData = cardData.reduce((acc, card) => {
-			const { cardNumber, notes, print, rarity } = cardChunk.find(
-				chunk => chunk.cardNumber === card.page.name.queried,
-			)
+		const appendedCardData = cardChunk.map(({ cardNumber, notes, print, rarity }) => {
+			const lookupCard = cardData.find(card => card.page.name.queried === cardNumber)
 			const appendedCard = {
-				...card,
+				...lookupCard,
 				printNotes: notes,
 				printType: print,
 				rarity,
 				setCode: cardNumber,
 			}
 
-			return [...acc, appendedCard]
-		}, [])
+			return appendedCard
+		})
 
 		addKeyTraceToObject(cards, trace, appendedCardData)
 	}
