@@ -8,13 +8,17 @@ const browser = new ClusterBrowser({ retryLimit: 3, timeout: 8000 })
 // wrapping it in the limiter santizes the 'this' object prior to running
 const runTaskOnList = limiter.wrap(browser.runTaskOnList.bind(browser))
 
-export const scrapeSetCardLists = async (setName, userAgent) => {
+export const scrapeSetCardLists = async setName => {
 	const lists = (
 		await runTaskOnList(
 			async (page, data) => {
-				await page.setUserAgent(userAgent)
-				await page.goto(`${WIKI_ENDPOINT}/${data}`)
+				await page.setUserAgent(
+					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+				)
 				await page.setViewport({ width: 1920, height: 1080 })
+				await page.goto(`${WIKI_ENDPOINT}/${data}`, {
+					waitUntil: "networkidle2",
+				})
 
 				const mainSelector = ".set-navigation .set-navigation__row dl"
 
@@ -37,35 +41,64 @@ export const scrapeSetCardLists = async (setName, userAgent) => {
 									)
 									.join(""),
 							)
-							const rows = Array.from(node.querySelectorAll("table tbody tr"), node => {
-								const items = Array.from(node.querySelectorAll("td")).reduce(
-									(acc, node, columnNumber) => {
-										const header = headers[columnNumber]
-										const link = node.querySelector("a")
-										let item
-										let notes
+							const rows = Array.from(node.querySelectorAll("table tbody tr")).reduce(
+								(acc, node) => {
+									const cells = Array.from(node.querySelectorAll("td")).reduce(
+										(acc, node, columnNumber) => {
+											const header = headers[columnNumber]
 
-										if (link) {
-											item = link.title
+											if (header === "rarity") {
+												const rarities = Array.from(node.childNodes)
+													.reduce(
+														(acc, child) => {
+															if (child.nodeName === "BR") {
+																acc.push([])
+															} else if (child.nodeName === "A") {
+																acc[acc.length - 1].push(child.title)
+															} else {
+																acc[acc.length - 1].push(child.textContent)
+															}
 
-											if (/name/i.test(header)) {
-												link.remove()
-												notes = node.textContent.trim()
-												notes = notes.substring(3, notes.length - 1).trim()
+															return acc
+														},
+														[[]],
+													)
+													.flat(3)
 
-												if (!/[^\"]/.test(notes)) notes = ""
+												return { ...acc, rarities }
 											}
-										} else {
-											item = node.textContent
-										}
 
-										return { ...acc, [header]: item, ...(notes ? { notes } : {}) }
-									},
-									{},
-								)
+											const link = node.querySelector("a")
+											let item
+											let notes
 
-								return items
-							})
+											if (link) {
+												item = link.title
+
+												if (/name/i.test(header)) {
+													link.remove()
+													notes = node.textContent.trim().substring(3).trim()
+
+													if (!/[^\"]/.test(notes)) notes = ""
+												}
+											} else {
+												item = node.textContent
+											}
+
+											return { ...acc, [header]: item, ...(notes ? { notes } : {}) }
+										},
+										{},
+									)
+									const { rarities, ...rest } = cells
+									const split = Array.from({ length: rarities.length }, (_, i) => ({
+										...rest,
+										rarity: rarities[i],
+									}))
+
+									return [...acc, ...split]
+								},
+								[],
+							)
 
 							return [...acc, ...rows]
 						}, [])
@@ -80,3 +113,5 @@ export const scrapeSetCardLists = async (setName, userAgent) => {
 
 	return lists
 }
+
+// need to split columns based on br tags (i think)
