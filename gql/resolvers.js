@@ -13,10 +13,14 @@ export const getOneCardByNameResolver = async (name, context, info) => {
 	const printouts = parseCardFields(info)
 	const data = await getCardsByName([name], printouts, context)
 
+	// This isn't the best way to do this, I'm sure. Think of something else.
+	if (data[0].error) throw data[0].error
+
 	return data[0]
 }
 
 export const getManyCardsByNameResolver = async (names, context, info) => {
+	// need to figure out how to handle subset of data throwing 404's, etc.
 	const printouts = parseCardFields(info)
 	const data = await getCardsByName(names, printouts, context)
 
@@ -64,10 +68,14 @@ export const getOneSetByNameResolver = async (name, context, info) => {
 	const printouts = parseSetFields(info)
 	const data = await getSetsByName([name], printouts, context)
 
+	// This isn't the best way to do this, I'm sure. Think of something else.
+	if (data[0].error) throw data[0].error
+
 	return data[0]
 }
 
 export const getManySetsByNameResolver = async (name, context, info) => {
+	// need to figure out how to handle subset of data throwing 404's, etc.
 	const printouts = parseSetFields(info)
 	const data = await getSetsByName(name, printouts, context)
 

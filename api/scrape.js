@@ -66,6 +66,12 @@ export const scrapeSetCardLists = async setName => {
 												return { ...acc, rarities }
 											}
 
+											if (header === "category") {
+												const text = node.textContent
+
+												return { ...acc, category: text }
+											}
+
 											const link = node.querySelector("a")
 											let item
 											let notes
@@ -114,3 +120,5 @@ export const scrapeSetCardLists = async setName => {
 
 	return lists
 }
+
+// TODO: fix category data scrape - lds2-en124 is effect xyz monster with two sep links, so only effect monster is recorded
