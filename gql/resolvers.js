@@ -14,7 +14,7 @@ export const getOneCardByNameResolver = async (name, context, info) => {
 	const data = await getCardsByName([name], printouts, context)
 
 	// This isn't the best way to do this, I'm sure. Think of something else.
-	if (data[0].error) throw data[0].error
+	if (data[0].error.code !== 200) throw new Error(data[0].error.message)
 
 	return data[0]
 }
@@ -69,7 +69,7 @@ export const getOneSetByNameResolver = async (name, context, info) => {
 	const data = await getSetsByName([name], printouts, context)
 
 	// This isn't the best way to do this, I'm sure. Think of something else.
-	if (data[0].error) throw data[0].error
+	if (data[0].error.code !== 200) throw new Error(data[0].error.message)
 
 	return data[0]
 }
