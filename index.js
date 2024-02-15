@@ -37,30 +37,49 @@ class Yugipedia {
 			throw new TypeError(`Expected gqlQueryString to be a string`)
 
 		const queryName = parse(gqlQueryString).definitions[0].name?.value ?? "query"
+
+		if (queryName === "errors" || queryName === "warnings")
+			throw new Error(`The name of your query cannot be "errors" or "warnings"`)
+
 		const queries = splitGQLQueries(gqlQueryString)
-		const results = { [queryName]: {} }
+		const results = { data: { [queryName]: {} }, errors: [], warnings: [] }
 
 		for (let i = 0; i < queries.length; i++) {
-			const { name: resultName, query } = queries[i]
-
+			const { name: resultName, query: source } = queries[i]
+			const contextValue = { userAgent: this.userAgent, errors: [], warnings: [] }
 			const response = await graphql({
 				schema,
-				source: query,
-				contextValue: this,
+				source,
+				contextValue,
 				variableValues: variables,
 			})
 
 			if (response.errors) {
-				console.log(response.errors)
-				results[queryName][resultName] = {
-					error: {
-						code: 500,
-						message: JSON.stringify(response.errors),
-					},
+				for (let i = 0; i < response.errors.length; i++) {
+					const error = response.errors[i]
+					results.errors.push({ code: 500, log: error })
 				}
-			} else {
-				results[queryName][resultName] = response.data[resultName]
 			}
+			if (contextValue.errors.length) {
+				for (let i = 0; i < contextValue.errors.length; i++) {
+					const { code, log } = contextValue.errors[i]
+					results.errors.push({ code, log })
+				}
+			}
+			if (contextValue.warnings.length) {
+				for (let i = 0; i < contextValue.warnings.length; i++) {
+					const { code, log } = contextValue.warnings[i]
+					results.warnings.push({ code, log })
+				}
+			}
+
+			if (!response?.data?.[resultName]) {
+				results.warnings.push({ code: 500, log: `Query for <${resultName}> produced no data.` })
+				results.data[queryName][resultName] = {}
+				continue
+			}
+
+			results.data[queryName][resultName] = response.data[resultName]
 		}
 
 		// Converting in and out of a JSON reinstitutes a prototype for the results object
