@@ -82,9 +82,9 @@ const parseSetCardListFields = info => {
 			field === "spanish" ||
 			field === "korean"
 		)
-			languages[field] = {
-				trace: properCase(field),
-				requestedCardData: nested.field,
+			languages[properCase(field)] = {
+				trace: field,
+				requestedCardData: nested,
 			}
 	}
 

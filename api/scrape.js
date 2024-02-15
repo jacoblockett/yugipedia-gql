@@ -9,8 +9,8 @@ const browser = new ClusterBrowser({ retryLimit: 3 })
 const runTaskOnList = limiter.wrap(browser.runTaskOnList.bind(browser))
 
 export const scrapeSetCardLists = async setName => {
-	const lists = (
-		await runTaskOnList(
+	try {
+		const lists = await runTaskOnList(
 			async (page, data) => {
 				await page.setUserAgent(
 					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
@@ -22,7 +22,7 @@ export const scrapeSetCardLists = async setName => {
 				await page.goto(url, { waitUntil: "networkidle2" })
 				await page.waitForSelector(".set-navigation .set-navigation__row dl")
 
-				return await page.evaluate(async _ => {
+				const cardListData = await page.evaluate(async _ => {
 					return Array.from(
 						document.querySelectorAll(".set-lists-tabber .tabber .tabbertab"),
 					).reduce((acc, node) => {
@@ -110,15 +110,20 @@ export const scrapeSetCardLists = async setName => {
 						return { ...acc, [language]: list }
 					}, {})
 				})
+
+				return cardListData
 			},
 			[setName],
 		)
-	)?.[0]?.data
 
-	if (!lists)
-		throw new Error(`Something went wrong during the scraping process and no data was found.`)
+		if (!lists)
+			throw new Error(`Something went wrong during the scraping process and no data was found.`)
 
-	return lists
+		return lists?.[0]?.data
+	} catch (error) {
+		console.error("Scraping error")
+		throw error
+	}
 }
 
 // TODO: fix category data scrape - lds2-en124 is effect xyz monster with two sep links, so only effect monster is recorded
