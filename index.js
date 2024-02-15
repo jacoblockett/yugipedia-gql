@@ -11,9 +11,9 @@ class Yugipedia {
 	 *
 	 * @link https://yugipedia.com/wiki/Yugipedia:API
 	 *
-	 * @param {{name: string, email: string, reason?: string}} userAgent User-Agent details for the api devs to track/contact you by in case concerns are risen. Subvert at risk of being temp/perma-banned without recourse.
+	 * @param {{name: string, contact: string, reason?: string}} userAgent User-Agent details for the api devs to track/contact you by in case concerns are risen. Subvert at risk of being temp/perma-banned without recourse.
 	 * @param {string} userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
-	 * @param {string} userAgent.email The best email address to contact you by should the api devs have concerns
+	 * @param {string} userAgent.contact The best way contact you should the api devs have concerns
 	 * @param {string} [userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use"`
 	 */
 	constructor(userAgent) {
@@ -22,14 +22,14 @@ class Yugipedia {
 
 		if (typeof userAgent.name !== "string" || userAgent.name.length < 1)
 			throw new TypeError(`Expected userAgent.name to be a non-empty string`)
-		if (typeof userAgent.email !== "string" || userAgent.email.length < 1)
-			throw new TypeError(`Expected userAgent.email to be a non-empty string`)
+		if (typeof userAgent.contact !== "string" || userAgent.contact.length < 1)
+			throw new TypeError(`Expected userAgent.contact to be a non-empty string`)
 
 		if (userAgent.reason === void 0) userAgent.reason = "Data Collection for Personal Use"
 		if (typeof userAgent.reason !== "string" || userAgent.reason.length < 1)
 			throw new TypeError(`Expected userAgent.reason to be a non-empty string`)
 
-		this.userAgent = `name/${userAgent.name} email/${userAgent.email} reason/${userAgent.reason} node.js/${process.version} axios/^1.6.7`
+		this.userAgent = `name/${userAgent.name} contact/${userAgent.contact} reason/${userAgent.reason} node.js/${process.version} axios/^1.6.7`
 	}
 
 	async query(gqlQueryString, variables) {
@@ -51,6 +51,7 @@ class Yugipedia {
 			})
 
 			if (response.errors) {
+				console.log(response.errors)
 				results[queryName][resultName] = {
 					error: {
 						code: 500,
