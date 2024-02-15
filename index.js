@@ -15,8 +15,11 @@ class Yugipedia {
 	 * @param {string} userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
 	 * @param {string} userAgent.contact The best way contact you should the api devs have concerns
 	 * @param {string} [userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use"`
+	 *
+	 * @param {{hydratePrototype: boolean}} options
+	 * @param {boolean} [options.hydratePrototype] Weather to hydrate the prototype of the resulting data. Defaults to true.
 	 */
-	constructor(userAgent) {
+	constructor(userAgent, options) {
 		if (Object.prototype.toString.call(userAgent) !== "[object Object]")
 			throw new TypeError(`Expected userAgent to be an object`)
 
@@ -30,6 +33,12 @@ class Yugipedia {
 			throw new TypeError(`Expected userAgent.reason to be a non-empty string`)
 
 		this.userAgent = `name/${userAgent.name} contact/${userAgent.contact} reason/${userAgent.reason} node.js/${process.version} axios/^1.6.7`
+
+		if (Object.prototype.toString.call(options) !== "[object Object]") options = {}
+
+		if (typeof options.hydratePrototype !== "boolean") options.hydratePrototype = true
+
+		this.options = options
 	}
 
 	async query(gqlQueryString, variables) {
@@ -57,39 +66,35 @@ class Yugipedia {
 			if (response.errors) {
 				for (let i = 0; i < response.errors.length; i++) {
 					const error = response.errors[i]
-					results.errors.push({ code: 500, log: error })
+					results.errors.push({ name: resultName, code: 500, log: error })
 				}
 			}
 			if (contextValue.errors.length) {
 				for (let i = 0; i < contextValue.errors.length; i++) {
 					const { code, log } = contextValue.errors[i]
-					results.errors.push({ code, log })
+					results.errors.push({ name: resultName, code, log })
 				}
 			}
 			if (contextValue.warnings.length) {
 				for (let i = 0; i < contextValue.warnings.length; i++) {
 					const { code, log } = contextValue.warnings[i]
-					results.warnings.push({ code, log })
+					results.warnings.push({ name: resultName, code, log })
 				}
 			}
 
 			if (!response?.data?.[resultName]) {
-				results.warnings.push({ code: 500, log: `Query for <${resultName}> produced no data.` })
+				results.warnings.push({ name: resultName, code: 500, log: `Query produced no data.` })
 				results.data[queryName][resultName] = {}
 				continue
 			}
 
-			results.data[queryName][resultName] = response.data[resultName]
+			results.data[queryName][resultName] = this.options.hydratePrototype
+				? JSON.parse(JSON.stringify(response.data[resultName]))
+				: response.data[resultName]
 		}
 
-		// Converting in and out of a JSON reinstitutes a prototype for the results object
-		// as GQL creates objects with Object.create(null). Why do this? So when the results
-		// are logged you don't have to see that ugly [Object: null prototype] bs. Return
-		// results without hydrating if there're issues or bottlenecks.
-		return JSON.parse(JSON.stringify(results))
+		return results
 	}
-
-	// async semantic
 }
 
 export default Yugipedia
