@@ -11,7 +11,8 @@ const formatCardData = async data => {
 	const po = keysToCamelCase(data.printouts) // po, for PrintOuts
 
 	const pageDetails = {
-		name: { queried: data.rpno.original, destination: data.rpno.redirected },
+		redirectedFrom: data.rpno.from,
+		name: data.rpno.to,
 		type: po.pageType?.[0] && po.pageType[0].replace(/\s+page$/i, ""),
 		url: data.fullurl ?? "",
 		lastModified: po.modificationDate?.[0]?.timestamp

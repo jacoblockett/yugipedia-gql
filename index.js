@@ -4,6 +4,8 @@ import { graphql, parse } from "graphql"
 import schema from "./gql/schema.js"
 import splitGQLQueries from "./utils/splitGQLQueries.js"
 import sleep from "./utils/sleep.js"
+import errorStore, { clearErrors } from "./utils/errorStore.js"
+import warningStore from "./utils/warningStore.js"
 
 class Yugipedia {
 	/**
@@ -55,7 +57,7 @@ class Yugipedia {
 
 		for (let i = 0; i < queries.length; i++) {
 			const { name: resultName, query: source } = queries[i]
-			const contextValue = { userAgent: this.userAgent, errors: [], warnings: [] }
+			const contextValue = { userAgent: this.userAgent }
 			const response = await graphql({
 				schema,
 				source,
@@ -69,17 +71,21 @@ class Yugipedia {
 					results.errors.push({ name: resultName, code: 500, log: error })
 				}
 			}
-			if (contextValue.errors.length) {
-				for (let i = 0; i < contextValue.errors.length; i++) {
-					const { code, log } = contextValue.errors[i]
+			if (errorStore.length) {
+				for (let i = 0; i < errorStore.length; i++) {
+					const { code, log } = errorStore[i]
 					results.errors.push({ name: resultName, code, log })
 				}
+
+				clearErrors()
 			}
-			if (contextValue.warnings.length) {
-				for (let i = 0; i < contextValue.warnings.length; i++) {
-					const { code, log } = contextValue.warnings[i]
+			if (warningStore.length) {
+				for (let i = 0; i < warningStore.length; i++) {
+					const { code, log } = warningStore[i]
 					results.warnings.push({ name: resultName, code, log })
 				}
+
+				clearWarnings()
 			}
 
 			if (!response?.data?.[resultName]) {
