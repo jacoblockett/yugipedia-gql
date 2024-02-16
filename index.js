@@ -5,7 +5,7 @@ import schema from "./gql/schema.js"
 import splitGQLQueries from "./utils/splitGQLQueries.js"
 import sleep from "./utils/sleep.js"
 import errorStore, { clearErrors } from "./utils/errorStore.js"
-import warningStore from "./utils/warningStore.js"
+import warningStore, { clearWarnings } from "./utils/warningStore.js"
 
 class Yugipedia {
 	/**
@@ -89,7 +89,6 @@ class Yugipedia {
 			}
 
 			if (!response?.data?.[resultName]) {
-				results.warnings.push({ name: resultName, code: 500, log: `Query produced no data.` })
 				results.data[queryName][resultName] = {}
 				continue
 			}

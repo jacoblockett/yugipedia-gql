@@ -4,10 +4,10 @@ import { titlesQuery } from "../api/query.js"
 import dedupeArray from "../utils/dedupeArray.js"
 import properCase from "../utils/properCase.js"
 import { addError, addErrorAndExit } from "../utils/errorStore.js"
+import FatalError from "../utils/FatalError.js"
 
 const findRedirectTails = async (pageNames, userAgent) => {
-	if (!isNonNullStringArray(pageNames))
-		throw new TypeError(`Expected pageNames to be an array of strings`)
+	if (!isNonNullStringArray(pageNames)) FatalError(`Expected pageNames to be an array of strings`)
 
 	pageNames = pageNames
 		.map(pageName => {

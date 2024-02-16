@@ -8,13 +8,17 @@ import getSetsByName from "../queries/getSetsByName.js"
 
 import graphqlFields from "graphql-fields"
 import addKeyTraceToObject from "../utils/addKeyTraceToObject.js"
+import { addWarning } from "../utils/warningStore.js"
 
 export const getOneCardByNameResolver = async (name, context, info) => {
 	const printouts = parseCardFields(info)
 	const data = await getCardsByName([name], printouts, context)
 
-	// This isn't the best way to do this, I'm sure. Think of something else.
-	if (data[0].error.code !== 200) throw new Error(data[0].error.message)
+	if (!data[0])
+		addWarning({
+			code: 300,
+			log: { message: `Data missing. There is likely an error log explaining this.` },
+		})
 
 	return data[0]
 }

@@ -19,7 +19,7 @@ import {
 	getOneSetByNameResolver,
 } from "./resolvers.js"
 import { categoryMembersQuery } from "../api/query.js"
-import parseCardFilterMedium from "../parse/parseFilterMedium.js"
+import { addError } from "../utils/errorStore.js"
 
 const NonNullInnerList = scalarType => new GraphQLList(new GraphQLNonNull(scalarType))
 
@@ -485,7 +485,14 @@ const schema = new GraphQLSchema({
 				resolve: async (_, { name }, context, info) => {
 					try {
 						return await getOneCardByNameResolver(name, context, info)
-					} catch {
+					} catch (error) {
+						if (!error.isKnownError) {
+							addError({
+								code: 501,
+								log: { message: `An unknown error occurred.`, payload: error },
+							})
+						}
+
 						return {}
 					}
 				},
@@ -496,7 +503,14 @@ const schema = new GraphQLSchema({
 				resolve: async (_, { name }, context, info) => {
 					try {
 						return await getOneSetByNameResolver(name, context, info)
-					} catch {
+					} catch (error) {
+						if (!error.isKnownError) {
+							addError({
+								code: 501,
+								log: { message: `An unknown error occurred.`, payload: error },
+							})
+						}
+
 						return {}
 					}
 				},

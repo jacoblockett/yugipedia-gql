@@ -17,9 +17,9 @@ const warningObjectSchema = Joi.object({
  * @param {{code: number, log: {message: string, payload: any}}} warning
  */
 export const addWarning = warning => {
-	const validation = errorObjectSchema.validate(warning)
+	const validation = warningObjectSchema.validate(warning)
 
-	if (valdiation.error) FatalError("warning object validation failed", validation.error)
+	if (validation.error) FatalError("warning object validation failed", validation.error)
 
 	warnings.push(warning)
 }
