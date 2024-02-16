@@ -1,8 +1,9 @@
 import camelCase from "lodash.camelcase"
+import FatalError from "./FatalError.js"
 
 const keysToCamelCase = object => {
 	if (Object.prototype.toString.call(object) !== "[object Object]")
-		throw new TypeError(`Expected object to be an object`)
+		FatalError(`Expected object to be an object`, object)
 
 	return Object.entries(object).reduce((acc, [key, value]) => {
 		acc[camelCase(key)] = value

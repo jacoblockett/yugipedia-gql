@@ -5,13 +5,15 @@ import ruby from "../utils/ruby.js"
 import cleanLinkedText from "../utils/cleanLinkedText.js"
 import { MEDIA_ENDPOINT } from "../utils/constants.js"
 import unixToISO from "../utils/unixToISO.js"
+import { addError } from "../utils/errorStore.js"
 
 const formatSetData = async data => {
 	// console.dir(data, { depth: null }) // for debugging
 	const po = keysToCamelCase(data.printouts) // po, for PrintOuts
 
 	const pageDetails = {
-		name: { queried: data.rpno.original, destination: data.rpno.redirected },
+		redirectedFrom: data.rpno.from,
+		name: data.rpno.to,
 		type: po.pageType?.[0] && po.pageType[0].replace(/\s+page$/i, ""),
 		url: data.fullurl ?? "",
 		lastModified: po.modificationDate?.[0]?.timestamp
@@ -19,14 +21,13 @@ const formatSetData = async data => {
 			: null,
 	}
 
-	if (!/set/i.test(po.pageType?.[0]))
-		return {
-			error: { code: 400, message: `Page <${data.fullurl}> is not a Set page` },
-			page: pageDetails,
-		}
+	if (!/set/i.test(po.pageType?.[0])) {
+		addError({ code: 400, log: { message: `This data is not for a set`, payload: pageDetails } })
+
+		return {}
+	}
 
 	return {
-		error: { code: 200, message: "OK" },
 		code: {
 			ean: po.ean?.[0],
 			isbn: po.isbn?.[0],

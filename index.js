@@ -3,7 +3,6 @@ import chalk from "chalk"
 import { graphql, parse } from "graphql"
 import schema from "./gql/schema.js"
 import splitGQLQueries from "./utils/splitGQLQueries.js"
-import sleep from "./utils/sleep.js"
 import errorStore, { clearErrors } from "./utils/errorStore.js"
 import warningStore, { clearWarnings } from "./utils/warningStore.js"
 
@@ -16,7 +15,7 @@ class Yugipedia {
 	 * @param {{name: string, contact: string, reason?: string}} userAgent User-Agent details for the api devs to track/contact you by in case concerns are risen. Subvert at risk of being temp/perma-banned without recourse.
 	 * @param {string} userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
 	 * @param {string} userAgent.contact The best way contact you should the api devs have concerns
-	 * @param {string} [userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use"`
+	 * @param {string} [userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use [Yugipedia-GQL]"`
 	 *
 	 * @param {{hydratePrototype: boolean}} options
 	 * @param {boolean} [options.hydratePrototype] Weather to hydrate the prototype of the resulting data. Defaults to true.
@@ -30,7 +29,8 @@ class Yugipedia {
 		if (typeof userAgent.contact !== "string" || userAgent.contact.length < 1)
 			throw new TypeError(`Expected userAgent.contact to be a non-empty string`)
 
-		if (userAgent.reason === void 0) userAgent.reason = "Data Collection for Personal Use"
+		if (userAgent.reason === void 0)
+			userAgent.reason = "Data Collection for Personal Use [Yugipedia-GQL]"
 		if (typeof userAgent.reason !== "string" || userAgent.reason.length < 1)
 			throw new TypeError(`Expected userAgent.reason to be a non-empty string`)
 
@@ -68,13 +68,17 @@ class Yugipedia {
 			if (response.errors) {
 				for (let i = 0; i < response.errors.length; i++) {
 					const error = response.errors[i]
-					results.errors.push({ name: resultName, code: 500, log: error })
+					results.errors.push({
+						culprit: resultName,
+						code: 500,
+						log: { message: `A GQL error occurred.`, payload: response.errors },
+					})
 				}
 			}
 			if (errorStore.length) {
 				for (let i = 0; i < errorStore.length; i++) {
 					const { code, log } = errorStore[i]
-					results.errors.push({ name: resultName, code, log })
+					results.errors.push({ culprit: resultName, code, log })
 				}
 
 				clearErrors()
@@ -82,7 +86,7 @@ class Yugipedia {
 			if (warningStore.length) {
 				for (let i = 0; i < warningStore.length; i++) {
 					const { code, log } = warningStore[i]
-					results.warnings.push({ name: resultName, code, log })
+					results.warnings.push({ culprit: resultName, code, log })
 				}
 
 				clearWarnings()
@@ -97,6 +101,9 @@ class Yugipedia {
 				? JSON.parse(JSON.stringify(response.data[resultName]))
 				: response.data[resultName]
 		}
+
+		if (!results.errors.length) results.errors = null
+		if (!results.warnings.length) results.warnings = null
 
 		return results
 	}

@@ -1,9 +1,9 @@
 import axios from "axios"
-import QueryError from "../utils/QueryError.js"
 import limiter from "./limiter.js"
 import { ENDPOINT } from "../utils/constants.js"
 import { get } from "./axios.js"
 import chunk from "lodash.chunk"
+import { addError } from "../utils/errorStore.js"
 
 // https://yugipedia.com/api.php?action=help&modules=query
 
@@ -18,7 +18,16 @@ export const titlesQuery = async (pageTitles, headers) => {
 			params: { titles: titles.join("|"), action: "query", format: "json", redirects: 1 },
 		})
 
-		if (data.error) QueryError(data.error)
+		if (data.error) {
+			addError({
+				code: 403,
+				log: {
+					message: `The query action performed produced an error.`,
+					payload: data.error,
+				},
+			})
+			continue
+		}
 
 		const { redirects, pages } = data.query
 

@@ -2,9 +2,11 @@
 
 A GraphQL wrapper around the [MediaWiki API](https://en.wikipedia.org/wiki/MediaWiki) for [Yugipedia](https://yugipedia.com/wiki/Yugipedia:API). Designed to make the queries and results more intuitive and simple.
 
+▶️ See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
+
 ## Installation
 
-You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your computer. It's best to have the most up-to-date LTS version installed. I typically test with the current version, but there's nothing fancy in here that shouldn't work for LTS. For reference, the Node version I used during testing was 21.2.0.
+You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your computer. It's best to have the most up-to-date LTS version installed.
 
 Once you have that installed, it should install NPM as a command line interface by default.
 
@@ -13,9 +15,6 @@ You can verify both NodeJS and NPM are installed properly by running the followi
 ```shell
 node -v
 npm -v
-
-# => v##.##.##
-# => ##.##.##
 ```
 
 Finally, cd into your directory of choice and create a new npm project:
@@ -34,9 +33,9 @@ npm i yugipedia-gql
 
 ## Usage
 
-General understanding of the [GraphQL language](https://graphql.org/learn) is highly recommended before attempting to use this API wrapper.
+A general understanding of the [GraphQL language](https://graphql.org/learn) is highly recommended before attempting to use this API wrapper.
 
-> ___Note___ - There is no need to roll your own rate limiter - all queries are rate limited to one page per second maximum to align with [the wishes of the API devs. (See: Request limit)](https://yugipedia.com/wiki/Yugipedia:API).
+> 💡 There is no need to roll your own rate limiter as all queries are rate limited to one page per second maximum to align with [the wishes of the API devs. (See: Request limit)](https://yugipedia.com/wiki/Yugipedia:API).
 
 ### Signature
 
@@ -44,25 +43,33 @@ General understanding of the [GraphQL language](https://graphql.org/learn) is hi
 class Yugipedia {
     constructor(
         userAgent: {
-            name: string;
-            email: string;
-            reason?: string;
+            name: string,
+            contact: string,
+            reason?: string,
+        },
+        options: {
+            hydratePrototype?: boolean,
         }
     )
 
     query(
         gqlQueryString: string,
         variables?: {
-            [key: string]: unknown
+            [key: string]: unknown,
         }
     ): Promise<{
         [key: string]: unknown
     }>
 }
-
-
-
 ```
+
+#### Constructor Arguments
+
+* `userAgent.name` - The best thing to refer to you as
+* `userAgent.contact` - The contact details to get a hold of you in case the devs have a question or need to reach out
+* `[userAgent.reason]` - The reason you're using the API (defaults to "Data Collection for Personal Use [Yugipedia-GQL])
+* `[options.hydratePrototype]` - The returned data's prototype is rehydrated as the GraphQL library nullifies it. This is mostly aesthetic, so if it causes issues, set this to false
+___
 
 ### Basic Usage
 
@@ -71,93 +78,54 @@ import Yugipedia from "yugipedia-gql"
 
 const api = new Yugipedia({
     name: "YOUR_NAME",
-    email: "YOUR_EMAIL@provider.com",
+    contact: "YOUR_CONTACT_INFO",
     reason: "Testing the GraphQL wrapper for Yugipedia"
 })
 
-// It's highly recommended to include the error object within your query
 const queryString = `#graphql
-    query data($name: String!) {
+    query($name: String!) {
         card(name: $name) {
-            error {
-                code
-                message
-            }
             name {
                 english
-                japanese {
-                    base
-                    annotation
+                korean {
+                    html
                 }
             }
+            stats {
+                attribute
+            }
+            types
         }
     }
 `
 const variables = { name: "Dark Magician" }
 const result = await api.query(queryString, variables)
 
-console.dir(result, { depth: null }) // In case you didn't know, this allows you to recursively see an object's entire structure in the terminal. Not important for this API's usage, but useful nonetheless!
+console.dir(result, { depth: null })
 ```
 
-The result of the above should look a little something like this:
+The above should produce:
 
-```json
+```shell
 {
-    "data": {
-        "card": {
-            "error": { 
-                "code": 200, 
-                "message": "OK"
-            },
-            "name": {
-                "english": "Dark Magician",
-                "japanese": {
-                    "base": "ブラック・マジシャン",
-                    "annotation": null
-                }
+    data: {
+        query: {
+            card: {
+                name: {
+                    english: 'Dark Magician',
+                    korean: {
+                        html: '블랙 매지션'
+                    }
+                },
+                stats: {
+                    attribute: 'Dark'
+                },
+                types: [ 'Spellcaster', 'Normal' ]
             }
         }
-    }
-}
-```
-
-___
-
-You can also use aliases and make multiple requests. For instance:
-
-```gql
-query data($name1: String!, $name2: String!, $name3: String!) {
-    DarkMagician: card(name: $name1) {
-        types
-    }
-    DarkMagicAttack: card(name: $name2) {
-        properties: types
-    }
-    LegendOfBlueEyes: set(name: $name3) {
-        releaseDate
-    }
-}
-```
-
-will give you:
-
-```json
-{
-    "data": {
-        "DarkMagician": {
-            "types": [ "Spellcaster", "Normal" ]
-        },
-        "DarkMagicAttack": {
-            "properties": [ "Normal" ]
-        },
-        "LegendOfBlueEyes": {
-            "releaseDate": {
-                "english": {
-                    "earliest": "2002-03-08T00:00:00.000Z"
-                }
-            }
-        }
-  }
+    },
+    errors: null,
+    warnings: null
 }
 ```
 
@@ -165,25 +133,48 @@ ___
 
 ## Redirects
 
-This wrapper will make an attempt to resolve redirects as best as possible. That means querying the set for [`"LOB"`](https://yugipedia.com/wiki/LOB) and [`"Legend of Blue Eyes White Dragon"`](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) should yield the same page. It's not perfect, though, and relies on the API's internal ability to resolve redirects so it's best to try to make sure names you provide lead to an active page before querying for it if you're able to beforehand.
+This wrapper will make an attempt to resolve redirects as best as possible. It does so by coercing lowercase, uppercase, propercase, titlecase, and sentencecase variations of your provided details and querying them all against the API efficiently. To test this, you can try a `set` query with each of the following set names for the [Legend of Blue Eyes White Dragon](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) set; they should all succeed.
 
-## Errors
+* lob
+* Lob
+* LOB
+* Legend of Blue Eyes White Dragon
+* legend of blue eyes white dragon
+* legend_of_blue_eyes_white_dragon
+* leGEND Of Blue eyeS whitE DRaGON
 
-Errors come in two varieties - Those produced by the Yugipedia API and those produced by malformed GraphQL query syntax. Both will populate the error object on the type it was called on in the `{ error: { code: number, message: string } }` format. It is highly recommended to include the error object in every query you make - results may be confusing otherwise. Codes to be aware of:
 
-__`200`__ : OK - The request produced no errors and the results shouldn't be malformed.
+It's not infallible, unfortunately, so do try your best to make sure you spell things correctly.
 
-__`400`__ : Bad Request - The request you made doesn't match the type of data you asked for. This might happen if the page name you provided for a card query matches an archetype page, for example.
+## Errors/Warnings
 
-__`404`__ : Not Found - The request you made doesn't actually exist. This might be a spelling error or a lack of resources on the Yugipedia server matching your request.
+Errors have recently been overhauled to be more reliable and informative. The errors and warnings keys are nullable, meaning they will be `null` if nothing populated them. If something exists, they will be an array of errors or warnings respectively.
 
-__`500`__ : Server Error - This is expected to only be GraphQL syntax errors. Expect the message on this to be a JSON string representing an array of errors found.
+#### Basic Categories:
 
-> ⚠️ If you happen upon an error code or weird message that doesn't really fit these descriptions, please create an issue about it. In the issue, make sure to provide your relevant code that caused the error so I can reproduce it, and a screenshot or copy/pasta of what I should expect to see.
+* __`3xx`__ - These are reserved for warnings
+* __`4xx`__ - These are reserved for errors originating from data collection, such as scraping and/or API errors
+* __`5xx`__ - These are reserved for internal errors, such as GQL query syntax errors or fatal errors (usually my fault; sorry in advance!)
+
+#### Breakdown - 3xx:
+
+* __`300 <Missing Data>`__ - Describes data that is missing when it was expected by a parser or formatter.
+* __`301 <Missing/Corrupted Data>`__ - Describes data that is missing or corrupted as a resource on the fetched endpoint. (to be clear, it's data that _should_ exist, but for some reason doesn't)
+
+#### Breakdown - 4xx:
+
+* __`400 <Bad Request>`__ - The data that was requested doesn't match the data that was found. For instance, if a name you provided for the `card` query matches a set instead, etc.
+* __`402 <Scrape Failed>`__ - A scraping request failed. Most likely this will be caused by Yugipedia not being in good health for one reason or another.
+* __`403 <API Error>`__ - The underlying SMW/MW API produced an error.
+* __`404 <Data Not Found>`__ - The data you requested doesn't exist as a resource on the providing server. This will most likely occur due to spelling errors.
+
+#### Breakdown - 5xx:
+* __`500 <GQL Error>`__ - These errors are produced by the underlying GraphQL interpreter, usually denoting syntax errors or issues.
+* __`501 <Unknown Error>`__ - The errors that was raised is known to be unknown. These will be random, uncaught and untested errors that are thrown by anyone from anywhere down the chain. These shouldn't be common, but still might occur.
 
 ## Schema
 
-Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.md).
+Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.gql).
 
 ### ___`card(name: String!): Card <RootQuery>`___
 
@@ -196,7 +187,6 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.deckType <String>`__ - which deck type this card belongs to (main, side, etc.)
 * __`Card.description <CardText>`__ - 'lore' or description box text of this card
 * __`Card.effectTypes <[String!]>`__ - what types of effects this card performs
-* __`Card.error <Error>`__ - a generic error object recommended to tag along with every query
 * __`Card.image <CardImage>`__ - details on images, including names and links
 * __`Card.isReal <Boolean>`__ - denotes if the card exists in the physical ocg/tcg
 * __`Card.konamiID <String>`__ - the database ID Konami uses for this card
@@ -222,16 +212,15 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.types <[String!]>`__ - the types (warrior/effect/etc.) or spell/trap properties (continuous/equip/etc.) this card has
 * __`Card.usedBy <[String!]>`__ - characters and their decks in which this card were used
 
-> ___Note___ - The `card` API is mainly focused on physical cards. It shouldn't throw an error (untested) when retrieving non-physical cards, such as video game cards, anime cards, etc., but the properties specific to those pages have been neglected for now. There is currently no plan to implement these properties as it would require many, many hours to scrape the `"All cards"` category members' properties to compile a complete and accurate list.
+> 💡 The `card` API is mainly focused on physical cards. It shouldn't throw an error (untested) when retrieving non-physical cards, such as video game cards, anime cards, etc., but the properties specific to those pages have been neglected for now. There is currently no plan to implement these properties as it would require many, many hours to scrape the `"All cards"` category members' properties to compile a complete and accurate list.
 
 ___
 
 ### ___`set(name: String!): YGOSet <RootQuery>`___
 
-* __`YGOSet.cards <CardList>`__ - the cards that are part of this set's setlist (previous versions of this field were quite slow but have now been heavily optimized. what took 2.5 minutes before for a query to LOB now takes about 15-20 seconds. have fun!)
+* __`YGOSet.cards <CardList>`__ - the cards that are part of this set's setlist (previous versions of this field were quite slow but have now been heavily optimized. what took 2.5 minutes before for a query to LOB now takes less than 20 seconds. have fun!)
 * __`YGOSet.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
 * __`YGOSet.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
-* __`YGOSet.error <Error>`__ - a generic error object recommended to tag along with every query
 * __`YGOSet.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
 * __`YGOSet.image <String>`__ - the main image used in the wiki for this set
 * __`YGOSet.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set

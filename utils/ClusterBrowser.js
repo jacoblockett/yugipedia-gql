@@ -19,7 +19,7 @@ class ClusterBrowser {
 	 * }} options
 	 */
 	constructor(options) {
-		if (!isObject(options)) options = { puppeteerOptions: { headless: "new" } }
+		if (!isObject(options)) options = {}
 		if (
 			!["CONCURRENCY_PAGE", "CONCURRENCY_CONTEXT", "CONCURRENCY_BROWSER"].includes(
 				options.concurreny,
@@ -57,11 +57,15 @@ class ClusterBrowser {
 		const results = []
 		const cluster = await Cluster.launch(this.browserOptions)
 
-		await cluster.task(async ({ page, data, worker }) => {
-			const result = await task(page, data, worker)
+		try {
+			await cluster.task(async ({ page, data, worker }) => {
+				const result = await task(page, data, worker)
 
-			results.push({ listItem: data, data: result })
-		})
+				results.push({ listItem: data, data: result, error: null })
+			})
+		} catch (error) {
+			results.push({ listItem: data, data: null, error })
+		}
 
 		for (let i = 0; i < list.length; i++) {
 			const listItem = list[i]

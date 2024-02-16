@@ -5,6 +5,7 @@ import ruby from "../utils/ruby.js"
 import cleanLinkedText from "../utils/cleanLinkedText.js"
 import { MEDIA_ENDPOINT } from "../utils/constants.js"
 import unixToISO from "../utils/unixToISO.js"
+import { addError } from "../utils/errorStore.js"
 
 const formatCardData = async data => {
 	// console.dir(data, { depth: null }) // for debugging
@@ -20,11 +21,11 @@ const formatCardData = async data => {
 			: null,
 	}
 
-	if (!/card/i.test(po.pageType?.[0]))
-		return {
-			error: { code: 400, message: `Page <${data.fullurl}> is not a Card page` },
-			page: pageDetails,
-		}
+	if (!/card/i.test(po.pageType?.[0])) {
+		addError({ code: 400, log: { message: `This data is not for a card`, payload: pageDetails } })
+
+		return {}
+	}
 
 	const attackActions = (po.attack ?? []).map(s => s.fulltext)
 	const banishActions = (po.banishing ?? []).map(s => s.fulltext)
@@ -69,7 +70,6 @@ const formatCardData = async data => {
 	const types = [...monsterTypes, ...nonMonsterTypes]
 
 	return {
-		error: { code: 200, message: "OK" },
 		actions: {
 			all: allActions.length ? allActions : null,
 			attack: attackActions.length ? attackActions : null,

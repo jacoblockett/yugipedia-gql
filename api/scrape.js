@@ -1,5 +1,6 @@
 import ClusterBrowser from "../utils/ClusterBrowser.js"
 import { INDEX_ENDPOINT, WIKI_ENDPOINT } from "../utils/constants.js"
+import { addError } from "../utils/errorStore.js"
 import limiter from "./limiter.js"
 
 const browser = new ClusterBrowser({ retryLimit: 3 })
@@ -9,23 +10,21 @@ const browser = new ClusterBrowser({ retryLimit: 3 })
 const runTaskOnList = limiter.wrap(browser.runTaskOnList.bind(browser))
 
 export const scrapeSetCardLists = async setName => {
-	try {
-		const lists = await runTaskOnList(
-			async (page, data) => {
-				await page.setUserAgent(
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-				)
-				await page.setViewport({ width: 1920, height: 1080 })
+	const lists = await runTaskOnList(
+		async (page, data) => {
+			await page.setUserAgent(
+				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+			)
+			await page.setViewport({ width: 1920, height: 1080 })
 
-				const url = `${INDEX_ENDPOINT}?title=${data}&mobileaction=toggle_view_desktop`
+			const url = `${INDEX_ENDPOINT}?title=${data}&mobileaction=toggle_view_desktop`
 
-				await page.goto(url, { waitUntil: "networkidle2" })
-				await page.waitForSelector(".set-navigation .set-navigation__row dl")
+			await page.goto(url, { waitUntil: "networkidle2" })
+			await page.waitForSelector(".set-navigation .set-navigation__row dl")
 
-				const cardListData = await page.evaluate(async _ => {
-					return Array.from(
-						document.querySelectorAll(".set-lists-tabber .tabber .tabbertab"),
-					).reduce((acc, node) => {
+			const cardListData = await page.evaluate(async _ => {
+				return Array.from(document.querySelectorAll(".set-lists-tabber .tabber .tabbertab")).reduce(
+					(acc, node) => {
 						const language = node.title
 						const list = Array.from(node.querySelectorAll(".set-list")).reduce((acc, node) => {
 							const headers = Array.from(node.querySelectorAll("table thead > tr th"), header =>
@@ -108,22 +107,37 @@ export const scrapeSetCardLists = async setName => {
 						}, [])
 
 						return { ...acc, [language]: list }
-					}, {})
-				})
+					},
+					{},
+				)
+			})
 
-				return cardListData
-			},
-			[setName],
-		)
+			return cardListData
+		},
+		[setName],
+	)
 
-		if (!lists)
-			throw new Error(`Something went wrong during the scraping process and no data was found.`)
+	if (lists?.[0]?.error) {
+		addError({
+			code: 402,
+			log: { message: `An error forced the scraping process to fail.`, payload: lists[0].error },
+		})
 
-		return lists?.[0]?.data
-	} catch (error) {
-		console.error("Scraping error")
-		throw error
+		return {}
 	}
+
+	if (!lists?.[0]?.data) {
+		addError({
+			code: 404,
+			log: {
+				message: `Something unexpected happened and no data was found after scraping the link ${INDEX_ENDPOINT}?title=${setName}&mobileaction=toggle_view_desktop`,
+			},
+		})
+
+		return {}
+	}
+
+	return lists[0].data
 }
 
 // TODO: fix category data scrape - lds2-en124 is effect xyz monster with two sep links, so only effect monster is recorded

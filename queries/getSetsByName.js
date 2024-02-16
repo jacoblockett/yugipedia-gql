@@ -1,27 +1,37 @@
 import formatSetData from "../format/formatSetData.js"
-import isNonNullStringArray from "../utils/isNonNullStringArray.js"
+import isStringArray from "../utils/isStringArray.js"
 import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
+import FatalError from "../utils/FatalError.js"
 
 const getSetsByName = async (names, printouts, { userAgent }) => {
-	if (!isNonNullStringArray(names)) throw new TypeError(`Expected names to be an array of strings`)
+	if (!isStringArray(names)) FatalError(`Expected names to be an array of strings`, names)
 
 	names = await findRedirects(names, userAgent)
 
+	if (!names.length) return []
+
 	const data = await askargs(
 		{ "User-Agent": userAgent },
-		names.map(name => name.redirected),
+		names.map(name => name.to),
 		printouts,
 	)
 
 	return await Promise.all(
-		names.map(async ({ original, redirected }, i) => {
-			const setData = data.find(({ fulltext }) => redirected === fulltext)
+		names.map(async ({ from, to }, i) => {
+			const setData = data.find(({ fulltext: pageName }) => pageName === to)
 
-			if (!setData)
-				return { error: { code: 404, message: `Page for <${original}> was not found.` } }
+			if (!setData) {
+				addWarning({
+					code: 300,
+					log: {
+						message: `Data missing for "${from}". There is likely an error log explaining this.`,
+					},
+				})
+				return
+			}
 
-			return formatSetData({ ...setData, rpno: { original, redirected } }) // rpno - redirected page name object
+			return await formatSetData({ ...setData, rpno: { from, to } }) // rpno - redirected page name object
 		}),
 	)
 }

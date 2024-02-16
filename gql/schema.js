@@ -19,7 +19,7 @@ import {
 	getOneSetByNameResolver,
 } from "./resolvers.js"
 import { categoryMembersQuery } from "../api/query.js"
-import { addError } from "../utils/errorStore.js"
+import { addError, addErrorAndExit } from "../utils/errorStore.js"
 
 const NonNullInnerList = scalarType => new GraphQLList(new GraphQLNonNull(scalarType))
 
@@ -143,14 +143,6 @@ const DetailedChineseTextObject = new GraphQLObjectType({
 	}),
 })
 
-const Error = new GraphQLObjectType({
-	name: "Error",
-	fields: () => ({
-		code: { type: GraphQLInt },
-		message: { type: GraphQLString },
-	}),
-})
-
 const FrenchLocalDetailObject = new GraphQLObjectType({
 	name: "FrenchLocalDetailObject",
 	fields: () => ({
@@ -232,13 +224,37 @@ const Materials = new GraphQLObjectType({
 	fields: () => ({
 		required: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ required }, _, context, info) =>
-				await getManyCardsByNameResolver(required ?? [], context, info),
+			resolve: async ({ required }, _, context, info) => {
+				try {
+					return await getManyCardsByNameResolver(required ?? [], context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
+
+					return []
+				}
+			},
 		},
 		usedFor: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ usedFor }, _, context, info) =>
-				await getManyCardsByNameResolver(usedFor ?? [], context, info),
+			resolve: async ({ usedFor }, _, context, info) => {
+				try {
+					return await getManyCardsByNameResolver(usedFor ?? [], context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
+
+					return []
+				}
+			},
 		},
 	}),
 })
@@ -402,7 +418,6 @@ const Card = new GraphQLObjectType({
 		deckType: { type: GraphQLString },
 		description: { type: LocaleText },
 		effectTypes: { type: NonNullInnerList(GraphQLString) },
-		error: { type: Error },
 		image: { type: CardImage },
 		isReal: { type: GraphQLBoolean },
 		konamiID: { type: GraphQLString },
@@ -411,8 +426,20 @@ const Card = new GraphQLObjectType({
 		mediums: { type: NonNullInnerList(GraphQLString) },
 		mentions: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ mentions }, _, context, info) =>
-				await getManyCardsByNameResolver(mentions ?? [], context, info),
+			resolve: async ({ mentions }, _, context, info) => {
+				try {
+					return await getManyCardsByNameResolver(mentions ?? [], context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
+
+					return []
+				}
+			},
 		},
 		miscTags: { type: NonNullInnerList(GraphQLString) },
 		name: { type: LocaleText },
@@ -430,8 +457,20 @@ const Card = new GraphQLObjectType({
 		status: { type: Status },
 		summonedBy: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ summonedBy }, _, context, info) =>
-				await getManyCardsByNameResolver(summonedBy ?? [], context, info),
+			resolve: async ({ summonedBy }, _, context, info) => {
+				try {
+					return await getManyCardsByNameResolver(summonedBy ?? [], context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
+
+					return []
+				}
+			},
 		},
 		types: { type: NonNullInnerList(GraphQLString) },
 		usedBy: { type: NonNullInnerList(GraphQLString) },
@@ -444,18 +483,38 @@ const YGOSet = new GraphQLObjectType({
 		cards: {
 			type: CardList,
 			resolve: async ({ page }, _, context, info) => {
-				const pageName = page.name.destination
+				try {
+					return await getCardsBySetNameResolver(page?.name, context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
 
-				return await getCardsBySetNameResolver(pageName, context, info)
+					return {}
+				}
 			},
 		},
 		code: { type: ProductCode },
 		coverCards: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ coverCards }, _, context, info) =>
-				await getManyCardsByNameResolver(coverCards ?? [], context, info),
+			resolve: async ({ coverCards }, _, context, info) => {
+				try {
+					return await getManyCardsByNameResolver(coverCards ?? [], context, info)
+				} catch (error) {
+					if (!error.isKnownError) {
+						addError({
+							code: 501,
+							log: { message: `An unknown error occurred.`, payload: error },
+						})
+					}
+
+					return []
+				}
+			},
 		},
-		error: { type: Error },
 		format: { type: GraphQLString },
 		image: { type: GraphQLString },
 		konamiID: { type: SetKonamiDatabaseID },
@@ -464,8 +523,24 @@ const YGOSet = new GraphQLObjectType({
 		page: { type: WikiPage },
 		parent: {
 			type: YGOSet,
-			resolve: async ({ parent }, _, context, info) =>
-				parent ? await getOneSetByNameResolver(parent, context, info) : {},
+			resolve: async ({ parent }, _, context, info) => {
+				if (parent) {
+					try {
+						return await getOneSetByNameResolver(parent, context, info)
+					} catch (error) {
+						if (!error.isKnownError) {
+							addError({
+								code: 501,
+								log: { message: `An unknown error occurred.`, payload: error },
+							})
+						}
+
+						return []
+					}
+				} else {
+					return {}
+				}
+			},
 		},
 		prefix: { type: Prefix },
 		promotionalSeries: { type: GraphQLString },

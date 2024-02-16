@@ -1,11 +1,12 @@
 import formatCardData from "../format/formatCardData.js"
-import isNonNullStringArray from "../utils/isNonNullStringArray.js"
+import isStringArray from "../utils/isStringArray.js"
 import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
 import { addError } from "../utils/errorStore.js"
+import FatalError from "../utils/FatalError.js"
 
 const getCardsByName = async (names, printouts, { userAgent }) => {
-	if (!isNonNullStringArray(names)) throw new TypeError(`Expected names to be an array of strings`)
+	if (!isStringArray(names)) FatalError(`Expected names to be an array of strings`, names)
 
 	names = await findRedirects(names, userAgent)
 
@@ -19,9 +20,17 @@ const getCardsByName = async (names, printouts, { userAgent }) => {
 
 	return await Promise.all(
 		names.map(async ({ from, to }, i) => {
-			const cardData = data.find(({ fulltext }) => to === fulltext)
+			const cardData = data.find(({ fulltext: pageName }) => pageName === to)
 
-			if (!cardData) return { error: { code: 404, message: `Page for <${from}> was not found.` } }
+			if (!cardData) {
+				addWarning({
+					code: 300,
+					log: {
+						message: `Data missing for "${from}". There is likely an error log explaining this.`,
+					},
+				})
+				return
+			}
 
 			return await formatCardData({ ...cardData, rpno: { from, to } }) // rpno - redirected page name object
 		}),

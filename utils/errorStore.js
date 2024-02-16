@@ -39,7 +39,7 @@ export const addErrorAndExit = error => {
 
 	overrideUncaughtExceptionLog()
 
-	throw ""
+	throw { isKnownError: true }
 }
 
 export const clearErrors = () => (errors.length = 0)

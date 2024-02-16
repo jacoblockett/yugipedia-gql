@@ -14,27 +14,47 @@ export const getOneCardByNameResolver = async (name, context, info) => {
 	const printouts = parseCardFields(info)
 	const data = await getCardsByName([name], printouts, context)
 
-	if (!data[0])
+	if (!data.length)
 		addWarning({
 			code: 300,
-			log: { message: `Data missing. There is likely an error log explaining this.` },
+			log: {
+				message: `[getOneCardByNameResolver] Data missing. There is likely an error log explaining this.`,
+			},
 		})
 
 	return data[0]
 }
 
 export const getManyCardsByNameResolver = async (names, context, info) => {
-	// need to figure out how to handle subset of data throwing 404's, etc.
 	const printouts = parseCardFields(info)
 	const data = await getCardsByName(names, printouts, context)
+
+	if (!data.length || names.length !== data.length)
+		addWarning({
+			code: 300,
+			log: {
+				message: `[getManyCardsByNameResolver] Data missing. There is likely an error log explaining this.`,
+			},
+		})
 
 	return data
 }
 
 export const getCardsBySetNameResolver = async (setName, context, info) => {
 	const allCardsInSet = await scrapeSetCardLists(setName)
-	const languages = parseSetCardListFields(info)
 
+	if (!Object.keys(allCardsInSet).length) {
+		addWarning({
+			code: 300,
+			log: {
+				message: `[getCardsBySetNameResolver] Data missing. There is likely an error log explaining this.`,
+			},
+		})
+
+		return {}
+	}
+
+	const languages = parseSetCardListFields(info)
 	const cards = {}
 
 	for (let i = 0; i < languages.length; i++) {
@@ -42,6 +62,13 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 		const cardChunk = allCardsInSet[language]
 
 		if (!cardChunk) {
+			addWarning({
+				code: 301,
+				log: {
+					message: `The language "${language}" does not exist within the dataset`,
+					payload: allCardsInSet,
+				},
+			})
 			addKeyTraceToObject(cards, trace, [])
 			continue
 		}
@@ -78,16 +105,28 @@ export const getOneSetByNameResolver = async (name, context, info) => {
 	const printouts = parseSetFields(info)
 	const data = await getSetsByName([name], printouts, context)
 
-	// This isn't the best way to do this, I'm sure. Think of something else.
-	if (data[0].error.code !== 200) throw new Error(data[0].error.message)
+	if (!data.length)
+		addWarning({
+			code: 300,
+			log: {
+				message: `[getOneSetByNameResolver] Data missing. There is likely an error log explaining this.`,
+			},
+		})
 
 	return data[0]
 }
 
-export const getManySetsByNameResolver = async (name, context, info) => {
-	// need to figure out how to handle subset of data throwing 404's, etc.
+export const getManySetsByNameResolver = async (names, context, info) => {
 	const printouts = parseSetFields(info)
-	const data = await getSetsByName(name, printouts, context)
+	const data = await getSetsByName(names, printouts, context)
+
+	if (!data.length || names.length !== data.length)
+		addWarning({
+			code: 300,
+			log: {
+				message: `[getManySetsByNameResolver] Data missing. There is likely an error log explaining this.`,
+			},
+		})
 
 	return data
 }

@@ -1,22 +1,27 @@
-import normalizePageName from "../utils/normalizePageName.js"
-import isNonNullStringArray from "../utils/isNonNullStringArray.js"
+import isStringArray from "../utils/isStringArray.js"
 import { titlesQuery } from "../api/query.js"
-import dedupeArray from "../utils/dedupeArray.js"
 import properCase from "../utils/properCase.js"
 import { addError, addErrorAndExit } from "../utils/errorStore.js"
 import FatalError from "../utils/FatalError.js"
+import sentenceCase from "../utils/sentenceCase.js"
+import titleCase from "../utils/titleCase.js"
 
 const findRedirects = async (pageNames, userAgent) => {
-	if (!isNonNullStringArray(pageNames)) FatalError(`Expected pageNames to be an array of strings`)
+	if (!isStringArray(pageNames))
+		FatalError(`Expected pageNames to be an array of strings`, pageNames)
 
 	pageNames = pageNames
 		.map(pageName => {
 			const normalized = pageName.replaceAll("_", " ")
 			const upperCased = normalized.toUpperCase()
 			const properCased = properCase(normalized)
+			const titleCased = titleCase(normalized)
 			const lowerCased = normalized.toLowerCase()
+			const sentenceCased = sentenceCase(normalized)
 
-			const versions = [...new Set([normalized, upperCased, properCased, lowerCased])]
+			const versions = [
+				...new Set([normalized, upperCased, properCased, titleCased, sentenceCased, lowerCased]),
+			]
 
 			return { original: pageName, versions }
 		})
