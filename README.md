@@ -199,8 +199,7 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.page <WikiPage>`__ - meta details on the wiki page for this card
 * __`Card.password <String>`__ - the password of this card
 * __`Card.pendulum <Pendulum>`__ - pendulum details on this card
-* __`Card.printNotes <String>`__ - any notes about the print of this card (like alt art, etc. - only available when queried through a set)
-* __`Card.printType <String>`__ - the print type of this card (new, reprint, etc. - only available when queried through a set)
+* __`Card.print <PrintDetails>`__ - print details on the card, such as notes and type (new, reprint, etc.) (only available when queried through a set)
 * __`Card.pro <AntiOrPro>`__ - cards that are supported by this card
 * __`Card.rarity <String>`__ - the rarity of this card (only available when queried through a set)
 * __`Card.related <Related>`__ - page names representing pages that are related to this card

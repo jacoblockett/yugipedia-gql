@@ -301,6 +301,14 @@ const PrefixEnglish = new GraphQLObjectType({
 	}),
 })
 
+const PrintDetails = new GraphQLObjectType({
+	name: "PrintDetails",
+	fields: () => ({
+		notes: { type: GraphQLString },
+		type: { type: GraphQLString },
+	}),
+})
+
 const ProductCode = new GraphQLObjectType({
 	name: "ProductCode",
 	fields: () => ({
@@ -446,8 +454,7 @@ const Card = new GraphQLObjectType({
 		page: { type: WikiPage },
 		password: { type: GraphQLString },
 		pendulum: { type: Pendulum },
-		printNotes: { type: GraphQLString },
-		printType: { type: GraphQLString },
+		print: { type: PrintDetails },
 		pro: { type: AntiOrPro },
 		rarity: { type: GraphQLString },
 		related: { type: Related },

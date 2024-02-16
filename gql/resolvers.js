@@ -81,12 +81,14 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 		const appendedCardData = cardChunk.map(
 			({ cardNumber, englishName, name, notes, print, rarity }) => {
 				const lookupCard = cardData.find(
-					card => card.page.name.queried === (cardNumber || englishName || name),
+					card => card.page.redirectedFrom === (cardNumber || englishName || name),
 				)
 				const appendedCard = {
 					...lookupCard,
-					printNotes: notes,
-					printType: print,
+					print: {
+						notes,
+						type: print,
+					},
 					rarity,
 					setCode: cardNumber,
 				}

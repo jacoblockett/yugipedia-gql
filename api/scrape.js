@@ -44,6 +44,10 @@ export const scrapeSetCardLists = async setName => {
 										(acc, node, columnNumber) => {
 											const header = headers[columnNumber]
 
+											const link = node.querySelector("a")
+											let item
+											let notes
+
 											if (header === "rarity") {
 												const rarities = Array.from(node.childNodes)
 													.reduce(
@@ -63,26 +67,21 @@ export const scrapeSetCardLists = async setName => {
 													.flat(3)
 
 												return { ...acc, rarities }
-											}
-
-											if (header === "category") {
+											} else if (header === "category") {
 												const text = node.textContent
 
 												return { ...acc, category: text }
-											}
-
-											const link = node.querySelector("a")
-											let item
-											let notes
-
-											if (link) {
-												item = link.title
-
-												if (/name/i.test(header)) {
+											} else if (/name/i.test(header)) {
+												if (link) {
+													item = link.title
 													link.remove()
 													notes = node.textContent.trim().substring(3).trim()
 
 													if (!/[^\"]/.test(notes)) notes = ""
+												} else {
+													const text = node.textContent
+
+													item = text.substring(1, text.length - 1)
 												}
 											} else {
 												item = node.textContent
