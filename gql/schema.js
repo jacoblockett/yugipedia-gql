@@ -1,5 +1,6 @@
 import {
 	GraphQLBoolean,
+	GraphQLInputObjectType,
 	GraphQLInt,
 	GraphQLList,
 	GraphQLNonNull,
@@ -17,6 +18,8 @@ import {
 	getOneCardByNameResolver,
 	getOneSetByNameResolver,
 } from "./resolvers.js"
+import { categoryMembersQuery } from "../api/query.js"
+import parseCardFilterMedium from "../parse/parseFilterMedium.js"
 
 const NonNullInnerList = scalarType => new GraphQLList(new GraphQLNonNull(scalarType))
 
@@ -379,18 +382,11 @@ const WikiPage = new GraphQLObjectType({
 	name: "WikiPage",
 	fields: () => ({
 		lastModified: { type: GraphQLString },
-		name: { type: WikiPageName },
+		name: { type: GraphQLString },
+		redirectedFrom: { type: GraphQLString },
 		semanticProperties: { type: NonNullInnerList(GraphQLString) }, // need to implement
 		type: { type: GraphQLString },
 		url: { type: GraphQLString },
-	}),
-})
-
-const WikiPageName = new GraphQLObjectType({
-	name: "WikiPageName",
-	fields: () => ({
-		queried: { type: GraphQLString },
-		destination: { type: GraphQLString },
 	}),
 })
 
@@ -482,20 +478,30 @@ const YGOSet = new GraphQLObjectType({
 const schema = new GraphQLSchema({
 	query: new GraphQLObjectType({
 		name: "RootQuery",
-		fields: {
+		fields: () => ({
 			card: {
 				type: Card,
 				args: { name: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { name }, context, info) =>
-					await getOneCardByNameResolver(name, context, info),
+				resolve: async (_, { name }, context, info) => {
+					try {
+						return await getOneCardByNameResolver(name, context, info)
+					} catch {
+						return {}
+					}
+				},
 			},
 			set: {
 				type: YGOSet,
 				args: { name: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { name }, context, info) =>
-					await getOneSetByNameResolver(name, context, info),
+				resolve: async (_, { name }, context, info) => {
+					try {
+						return await getOneSetByNameResolver(name, context, info)
+					} catch {
+						return {}
+					}
+				},
 			},
-		},
+		}),
 	}),
 })
 
