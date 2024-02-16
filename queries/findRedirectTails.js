@@ -11,7 +11,7 @@ const findRedirectTails = async (pageNames, userAgent) => {
 
 	pageNames = pageNames
 		.map(pageName => {
-			const normalized = normalizePageName(pageName)
+			const normalized = pageName.replaceAll("_", " ")
 			const upperCased = normalized.toUpperCase()
 			const properCased = properCase(normalized)
 			const lowerCased = normalized.toLowerCase()
