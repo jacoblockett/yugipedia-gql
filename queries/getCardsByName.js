@@ -1,13 +1,13 @@
 import formatCardData from "../format/formatCardData.js"
 import isNonNullStringArray from "../utils/isNonNullStringArray.js"
-import findRedirectTails from "./findRedirectTails.js"
+import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
 import { addError } from "../utils/errorStore.js"
 
 const getCardsByName = async (names, printouts, { userAgent }) => {
 	if (!isNonNullStringArray(names)) throw new TypeError(`Expected names to be an array of strings`)
 
-	names = await findRedirectTails(names, userAgent)
+	names = await findRedirects(names, userAgent)
 
 	if (!names.length) return []
 

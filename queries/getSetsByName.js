@@ -1,12 +1,12 @@
 import formatSetData from "../format/formatSetData.js"
 import isNonNullStringArray from "../utils/isNonNullStringArray.js"
-import findRedirectTails from "./findRedirectTails.js"
+import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
 
 const getSetsByName = async (names, printouts, { userAgent }) => {
 	if (!isNonNullStringArray(names)) throw new TypeError(`Expected names to be an array of strings`)
 
-	names = await findRedirectTails(names, userAgent)
+	names = await findRedirects(names, userAgent)
 
 	const data = await askargs(
 		{ "User-Agent": userAgent },

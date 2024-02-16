@@ -6,7 +6,7 @@ import properCase from "../utils/properCase.js"
 import { addError, addErrorAndExit } from "../utils/errorStore.js"
 import FatalError from "../utils/FatalError.js"
 
-const findRedirectTails = async (pageNames, userAgent) => {
+const findRedirects = async (pageNames, userAgent) => {
 	if (!isNonNullStringArray(pageNames)) FatalError(`Expected pageNames to be an array of strings`)
 
 	pageNames = pageNames
@@ -92,4 +92,4 @@ const findRedirectTails = async (pageNames, userAgent) => {
 	return results
 }
 
-export default findRedirectTails
+export default findRedirects
