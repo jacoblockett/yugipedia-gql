@@ -3,8 +3,8 @@ schema {
 }
 
 type RootQuery {
-  card(name: String!): Card
-  set(name: String!): Set
+  card(searchTerm: String!): Card
+  set(searchTerm: String!): Set
 }
 
 type Card {

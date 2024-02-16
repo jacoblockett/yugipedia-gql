@@ -484,7 +484,7 @@ const Card = new GraphQLObjectType({
 	}),
 })
 
-const YGOSet = new GraphQLObjectType({
+const Set = new GraphQLObjectType({
 	name: "Set",
 	fields: () => ({
 		cards: {
@@ -529,7 +529,7 @@ const YGOSet = new GraphQLObjectType({
 		name: { type: LocaleText },
 		page: { type: WikiPage },
 		parent: {
-			type: YGOSet,
+			type: Set,
 			resolve: async ({ parent }, _, context, info) => {
 				if (parent) {
 					try {
@@ -563,10 +563,10 @@ const schema = new GraphQLSchema({
 		fields: () => ({
 			card: {
 				type: Card,
-				args: { name: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { name }, context, info) => {
+				args: { searchTerm: { type: new GraphQLNonNull(GraphQLString) } },
+				resolve: async (_, { searchTerm }, context, info) => {
 					try {
-						return await getOneCardByNameResolver(name, context, info)
+						return await getOneCardByNameResolver(searchTerm, context, info)
 					} catch (error) {
 						if (!error.isKnownError) {
 							addError({
@@ -580,11 +580,11 @@ const schema = new GraphQLSchema({
 				},
 			},
 			set: {
-				type: YGOSet,
-				args: { name: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { name }, context, info) => {
+				type: Set,
+				args: { searchTerm: { type: new GraphQLNonNull(GraphQLString) } },
+				resolve: async (_, { searchTerm }, context, info) => {
 					try {
-						return await getOneSetByNameResolver(name, context, info)
+						return await getOneSetByNameResolver(searchTerm, context, info)
 					} catch (error) {
 						if (!error.isKnownError) {
 							addError({

@@ -2,13 +2,11 @@
 
 A GraphQL wrapper around the [MediaWiki API](https://en.wikipedia.org/wiki/MediaWiki) for [Yugipedia](https://yugipedia.com/wiki/Yugipedia:API). Designed to make the queries and results more intuitive and simple.
 
-▶️ See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
+> ⚠️ This wrapper is in its very early stages. As new requirements are set and the full design/structure is realized, be prepared for drastic, breaking changes on a regular basis. See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
 
 ## Installation
 
-You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your computer. It's best to have the most up-to-date LTS version installed.
-
-Once you have that installed, it should install NPM as a command line interface by default.
+You'll need to have [NodeJS](https://nodejs.org/en/download) installed on your computer. It's best to have the most up-to-date LTS version installed. Installing NodeJS should also install NPM as a command line interface by default.
 
 You can verify both NodeJS and NPM are installed properly by running the following command in your terminal/emulator of choice:
 
@@ -83,8 +81,8 @@ const api = new Yugipedia({
 })
 
 const queryString = `#graphql
-    query($name: String!) {
-        card(name: $name) {
+    query($searchTerm: String!) {
+        card(searchTerm: $searchTerm) {
             name {
                 english
                 korean {
@@ -98,7 +96,7 @@ const queryString = `#graphql
         }
     }
 `
-const variables = { name: "Dark Magician" }
+const variables = { searchTerm: "Dark Magician" }
 const result = await api.query(queryString, variables)
 
 console.dir(result, { depth: null })
@@ -129,19 +127,65 @@ The above should produce:
 }
 ```
 
+### Explanation
+
+Currently, there are only two root queries
+
+```gql
+card(searchTerm: String!): Card
+
+set(searchTerm: String!): Set
+```
+
+The `searchTerm` for each root query can be anything you think will match a page of that type on Yugipedia. So, that means if Yugipedia recognizes it and can redirect to it, you're probably in business. For example, let's say we wanted info on the Legend of Blue Eyes White Dragon set. We could use the `set` root query with the following `searchTerm`'s:
+
+- `"LOB"`
+- `"LDD"`
+- `"LOB-EN"`
+- `"Legend of Blue Eyes White Dragon"`
+
+All of these should end up querying the correct set we were looking for. And for the Blue-Eyes White Dragon card, for example, we could query the `card` root query with the following `searchTerm`'s and we could expect accurate results:
+
+- `"BEWD"`
+- `"Blue-Eyes White Dragon"`
+- `"LOB-EN001"`
+- `"89631139"` (the card's password)
+- `"...etc."`
+
+The wrapper will do its best to take the `searchTerm` you provide and resolve it to the page it thinks you want, but be assured it will not make any assumptions should it find ambiguous results. It strictly relies on the underlying API's ability to resolve page name redirects, but will make some case and symbol adjustments to help find things should there be a slight discrepancy. More on how redirects are handled can be found below.
+
 ___
+
+The basic structure of a query result will have the following shape:
+
+```ts
+{
+    data: {
+        [key: queryTitle]: {
+            [key: rootQueryName]: {
+                ...any // whatever your requested data shape looks like
+            }
+        }
+    },
+    errors: null | [{ code: number, log: { message: string, payload?: unknown } }],
+    warnings: null | [{ code: number, log: { message: string, payload?: unknown } }],
+}
+```
+___
+
+_Stay tuned, more details and explanations to come..._
 
 ## Redirects
 
 This wrapper will make an attempt to resolve redirects as best as possible. It does so by coercing lowercase, uppercase, propercase, titlecase, and sentencecase variations of your provided details and querying them all against the API efficiently. To test this, you can try a `set` query with each of the following set names for the [Legend of Blue Eyes White Dragon](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) set; they should all succeed.
 
-* lob
-* Lob
-* LOB
-* Legend of Blue Eyes White Dragon
-* legend of blue eyes white dragon
-* legend_of_blue_eyes_white_dragon
-* leGEND Of Blue eyeS whitE DRaGON
+* `"lob"`
+* `"Lob"`
+* `"LOB"`
+* `"Legend of Blue Eyes White Dragon"`
+* `"legend of blue eyes white dragon"`
+* `"legend_of_blue_eyes_white_dragon"`
+* `"leGEND Of Blue eyeS whitE DRaGON"`
 
 
 It's not infallible, unfortunately, so do try your best to make sure you spell things correctly.
@@ -176,7 +220,7 @@ Errors have recently been overhauled to be more reliable and informative. The er
 
 Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.gql).
 
-### ___`card(name: String!): Card <RootQuery>`___
+### ___`card(searchTerm: String!): Card <RootQuery>`___
 
 * __`Card.actions <Actions>`__ - specific actions this card takes
 * __`Card.anti <AntiOrPro>`__ - cards that are targeted by this card
@@ -215,20 +259,20 @@ Below are some helpful descriptions of various fields found on root types. The e
 
 ___
 
-### ___`set(name: String!): YGOSet <RootQuery>`___
+### ___`set(searchTerm: String!): Set <RootQuery>`___
 
-* __`YGOSet.cards <CardList>`__ - the cards that are part of this set's setlist (previous versions of this field were quite slow but have now been heavily optimized. what took 2.5 minutes before for a query to LOB now takes less than 20 seconds. have fun!)
-* __`YGOSet.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
-* __`YGOSet.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
-* __`YGOSet.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
-* __`YGOSet.image <String>`__ - the main image used in the wiki for this set
-* __`YGOSet.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
-* __`YGOSet.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
-* __`YGOSet.name <LocaleText>`__ - the name of this set
-* __`YGOSet.page <WikiPage>`__ - meta details on the wiki page for this set
-* __`YGOSet.parent <Set>`__ - the parent set to this set
-* __`YGOSet.prefix <Prefix>`__ - the prefixes for this set
-* __`YGOSet.promotionalSeries <String>`__ - the promotional series this set belongs to (core boosters, etc.)
-* __`YGOSet.regionalPrefix <Prefix>`__ - the region-specific prefixes for this set
-* __`YGOSet.releaseDate <SetReleaseDate>`__ - this set's release date
-* __`YGOSet.type <String>`__ - the type of set this set is (booster, tin, etc.)
+* __`Set.cards <CardList>`__ - the cards that are part of this set's setlist (previous versions of this field were quite slow but have now been heavily optimized. what took 2.5 minutes before for a query to LOB now takes less than 20 seconds. have fun!)
+* __`Set.code <ProductCode>`__ - the product codes for this set (ISBN, etc.)
+* __`Set.coverCards <[Card!]>`__ - the cards that appear on the packaging for this set
+* __`Set.format <String>`__ - the format in regards to forbidden and limited lists (not common on sets, but does exist here and there)
+* __`Set.image <String>`__ - the main image used in the wiki for this set
+* __`Set.konamiID <SetKonamiDatabaseID>`__ - the database ID used by Konami for this set
+* __`Set.mediums <[String!]>`__ - the formats in which this set exists (ogc, tcg, games, etc.)
+* __`Set.name <LocaleText>`__ - the name of this set
+* __`Set.page <WikiPage>`__ - meta details on the wiki page for this set
+* __`Set.parent <Set>`__ - the parent set to this set
+* __`Set.prefix <Prefix>`__ - the prefixes for this set
+* __`Set.promotionalSeries <String>`__ - the promotional series this set belongs to (core boosters, etc.)
+* __`Set.regionalPrefix <Prefix>`__ - the region-specific prefixes for this set
+* __`Set.releaseDate <SetReleaseDate>`__ - this set's release date
+* __`Set.type <String>`__ - the type of set this set is (booster, tin, etc.)

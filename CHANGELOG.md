@@ -1,8 +1,32 @@
-## 2/16/2024 (v0.4.0 -> v0.4.1)
+## 2/16/2024 (v0.4.0 -> v0.4.1 -> v0.4.2)
 
 ### Bug fixes
 
-There was a bug after the v0.4.0 update that caused cards queried through set.cards to not populate their data properly. Through this, the schema has also been slightly altered so that set.cards.printType and set.cards.printNotes have been consolidated under a single object PrintDetails with the key set.cards.print -> .type, .notes.
+There was a bug after the v0.4.0 update that caused cards queried through set.cards to not populate their data properly.
+
+### Schema Updates
+
+```gql
+type Set {
+    ...
+    printType: String
+    printNotes: String
+    ...
+}
+```
+
+is now 
+
+```gql
+type Set {
+    print: PrintDetails
+}
+
+type PrintDetails {
+    type: String
+    notes: String
+}
+```
 
 ## 2/15/2024 (v0.3.4 -> v0.4.0)
 
