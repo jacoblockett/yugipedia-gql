@@ -12,6 +12,11 @@ const errorObjectSchema = Joi.object({
 	}).required(),
 })
 
+/**
+ * Pushes an error object to the error store
+ *
+ * @param {{code: number, log: {message: string, payload: any}}} error
+ */
 export const addError = error => {
 	const validation = errorObjectSchema.validate(error)
 
@@ -20,6 +25,11 @@ export const addError = error => {
 	errors.push(error)
 }
 
+/**
+ * Pushes an error object to the error store and throws
+ *
+ * @param {{code: number, log: {message: string, payload: any}}} error
+ */
 export const addErrorAndExit = error => {
 	const validation = errorObjectSchema.validate(error)
 

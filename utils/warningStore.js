@@ -11,6 +11,11 @@ const warningObjectSchema = Joi.object({
 	}).required(),
 })
 
+/**
+ * Pushes a warning object to the warning store
+ *
+ * @param {{code: number, log: {message: string, payload: any}}} warning
+ */
 export const addWarning = warning => {
 	const validation = errorObjectSchema.validate(warning)
 
