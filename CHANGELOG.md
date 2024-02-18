@@ -1,3 +1,11 @@
+## 2/18/2024 (v0.4.2 -> v0.4.3)
+
+### Improvement
+
+A bug was found related to retrieving card list data for non-default card lists from the main set page, specifically observed with the [Rarity Collection 20th Anniversary Edition](https://yugipedia.com/wiki/Rarity_Collection_20th_Anniversary_Edition). Despite receiving valid HTML responses from the site's asynchronous requests, these card lists were appearing empty. _This was an isolated event - as of this update the site admins have been unable to find an issue and the site loads the non-default lists just fine for them_
+
+To resolve this, when encountering such issues, the wrapper will now reference the missing card list pages directly from the set navigation box located above the general card lists on the main set page. These alternate lists have been verified to be complete and accurate for the required information.
+
 ## 2/16/2024 (v0.4.0 -> v0.4.1 -> v0.4.2)
 
 ### Bug fixes

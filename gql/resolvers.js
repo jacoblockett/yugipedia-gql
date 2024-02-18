@@ -41,7 +41,9 @@ export const getManyCardsByNameResolver = async (names, context, info) => {
 }
 
 export const getCardsBySetNameResolver = async (setName, context, info) => {
-	const allCardsInSet = await scrapeSetCardLists(setName)
+	const languages = parseSetCardListFields(info)
+	const originLanguages = languages.map(([language]) => language)
+	const allCardsInSet = await scrapeSetCardLists(setName, originLanguages)
 
 	if (!Object.keys(allCardsInSet).length) {
 		addWarning({
@@ -53,8 +55,6 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 
 		return {}
 	}
-
-	const languages = parseSetCardListFields(info)
 	const cards = {}
 
 	for (let i = 0; i < languages.length; i++) {
