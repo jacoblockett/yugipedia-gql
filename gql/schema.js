@@ -459,6 +459,7 @@ const Card = new GraphQLObjectType({
 		rarity: { type: GraphQLString },
 		related: { type: Related },
 		releases: { type: NonNullInnerList(GraphQLString) },
+		setCategory: { type: GraphQLString },
 		setCode: { type: GraphQLString },
 		stats: { type: Stats },
 		status: { type: Status },

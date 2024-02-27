@@ -248,6 +248,7 @@ Below are some helpful descriptions of various fields found on root types. The e
 * __`Card.rarity <String>`__ - the rarity of this card (only available when queried through a set)
 * __`Card.related <Related>`__ - page names representing pages that are related to this card
 * __`Card.releases <[String!]>`__ - the specific release titles this card is associated with (different with mediums in that this is more specific)
+* __`Card.setCategory <String>`__ - the category of this card in relation to its set (Variant card, Booster pack, etc.) (only available when queried through a set)
 * __`Card.setCode <String>`__ - the set code of this card (only available when queried through a set)
 * __`Card.stats <Stats>`__ - stats on this card, such as attack, defense, level, etc.
 * __`Card.status <Status>`__ - the status given a card in official formats (limited, forbidden, etc.)

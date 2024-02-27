@@ -34,6 +34,7 @@ type Card {
   rarity: String
   related: Related
   releases: [String!]
+  setCategory: String
   setCode: String
   stats: Stats
   status: Status

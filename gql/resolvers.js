@@ -79,7 +79,7 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 		)
 		const cardData = await getCardsByName(cardIdentifiers, printouts, context)
 		const appendedCardData = cardChunk.map(
-			({ cardNumber, englishName, name, notes, print, rarity }) => {
+			({ cardNumber, englishName, name, notes, print, rarity, setCategory }) => {
 				const lookupCard = cardData.find(
 					card => card.page.redirectedFrom === (cardNumber || englishName || name),
 				)
@@ -90,6 +90,7 @@ export const getCardsBySetNameResolver = async (setName, context, info) => {
 						type: print,
 					},
 					rarity,
+					setCategory,
 					setCode: cardNumber,
 				}
 

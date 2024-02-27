@@ -52,6 +52,9 @@ export const scrapeSetCardLists = async (setName, languages) => {
 					(acc, node) => {
 						const language = node.title
 						const list = Array.from(node.querySelectorAll(".set-list")).reduce((acc, node) => {
+							const setCategory = (
+								node.previousElementSibling?.querySelector(".mw-headline")?.textContent ?? ""
+							).trim()
 							const headers = Array.from(node.querySelectorAll("table thead > tr th"), header =>
 								header.textContent
 									.trim()
@@ -112,7 +115,12 @@ export const scrapeSetCardLists = async (setName, languages) => {
 												item = node.textContent
 											}
 
-											return { ...acc, [header]: item, ...(notes ? { notes } : {}) }
+											return {
+												...acc,
+												[header]: item,
+												...(notes ? { notes } : {}),
+												...(setCategory ? { setCategory } : {}),
+											}
 										},
 										{},
 									)
