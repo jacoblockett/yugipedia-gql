@@ -29,7 +29,7 @@ class Yugipedia {
 		if (typeof userAgent.contact !== "string" || userAgent.contact.length < 1)
 			throw new TypeError(`Expected userAgent.contact to be a non-empty string`)
 
-		if (userAgent.reason === void 0)
+		if (userAgent.reason === undefined)
 			userAgent.reason = "Data Collection for Personal Use [Yugipedia-GQL]"
 		if (typeof userAgent.reason !== "string" || userAgent.reason.length < 1)
 			throw new TypeError(`Expected userAgent.reason to be a non-empty string`)

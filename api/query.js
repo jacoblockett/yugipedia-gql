@@ -47,7 +47,7 @@ export const titlesQuery = async (pageTitles, headers) => {
 
 export const categoryMembersQuery = async (category, headers, options) => {
 	options = {
-		allowRedirects: options.allowRedirects !== void 0 ? options.allowRedirects : true,
+		allowRedirects: options.allowRedirects !== undefined ? options.allowRedirects : true,
 		maxResults: options.maxResults > 0 ? options.maxResults : Infinity,
 		categoryTypes:
 			Array.isArray(options.categoryTypes) &&

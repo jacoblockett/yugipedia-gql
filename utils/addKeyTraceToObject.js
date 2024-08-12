@@ -5,7 +5,7 @@ const addKeyTraceToObject = (obj, trace, value) => {
 	for (let i = 0; i < keys.length - 1; i++) {
 		const key = keys[i]
 
-		if (current[key] === void 0) {
+		if (current[key] === undefined) {
 			current[key] = {}
 		}
 

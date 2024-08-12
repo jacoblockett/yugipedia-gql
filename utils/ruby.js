@@ -15,7 +15,7 @@ const ruby = async html => {
 				}
 			})
 			.join("")
-			.replace(/[\n\r]+/g, "") || void 0
+			.replace(/[\n\r]+/g, "") || undefined
 	result.annotation =
 		tree.children
 			.map(leaf => {
@@ -28,7 +28,7 @@ const ruby = async html => {
 			.filter(s => s)
 			.join("")
 			.replace(/[\n\r]+/g, "")
-			.trim() || void 0
+			.trim() || undefined
 	result.transposed =
 		tree.children
 			.map(leaf => {
@@ -39,7 +39,7 @@ const ruby = async html => {
 				}
 			})
 			.join("")
-			.replace(/[\n\r]+/g, "") || void 0
+			.replace(/[\n\r]+/g, "") || undefined
 	result.adjacent =
 		tree.children
 			.map(leaf => {
@@ -50,7 +50,7 @@ const ruby = async html => {
 				}
 			})
 			.join("")
-			.replace(/[\n\r]+/g, "") || void 0
+			.replace(/[\n\r]+/g, "") || undefined
 
 	return result
 }
