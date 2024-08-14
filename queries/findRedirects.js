@@ -1,61 +1,41 @@
-import isStringArray from "../utils/isStringArray.js"
 import { titlesQuery } from "../api/query.js"
-import properCase from "../utils/properCase.js"
-import { addError, addErrorAndExit } from "../utils/errorStore.js"
+import { addError } from "../utils/errorStore.js"
 import FatalError from "../utils/FatalError.js"
-import sentenceCase from "../utils/sentenceCase.js"
-import titleCase from "../utils/titleCase.js"
+import isStringArray from "../utils/isStringArray.js"
 
+/**
+ * Attempts to find the final destination page of any and all given page names.
+ *
+ * @see ~/index.js for user agent documentation
+ *
+ * @param {string[][]} pageNames An array of page name variants to search redirects for. It will be assumed that the first name in each list is the original page name provided by the user, and each subsequent name is a calculated variant
+ * @param {{name: string, contact: string, reason?: string}} userAgent The user agent to use when making page queries - this should be the userAgent provided by the user on the main constructor
+ * @returns {{from: string, to: string}[]}
+ */
 const findRedirects = async (pageNames, userAgent) => {
-	if (!isStringArray(pageNames))
+	if (!Array.isArray(pageNames)) FatalError(`Expected pageNames to be an array`, pageNames)
+	if (pageNames.some(variants => !isStringArray(variants)))
 		FatalError(`Expected pageNames to be an array of strings`, pageNames)
 
-	pageNames = pageNames
-		.map(pageName => {
-			const normalized = pageName.replaceAll("_", " ")
-			const upperCased = normalized.toUpperCase()
-			const properCased = properCase(normalized)
-			const titleCased = titleCase(normalized)
-			const lowerCased = normalized.toLowerCase()
-			const sentenceCased = sentenceCase(normalized)
-
-			const versions = [
-				...new Set([normalized, upperCased, properCased, titleCased, sentenceCased, lowerCased]),
-			]
-
-			return { original: pageName, versions }
-		})
-		.reduce((acc, pageName) => {
-			const regex = new RegExp(`${pageName.original}|${pageName.versions.join("|")}`)
-			const match = acc.find(pageName => {
-				const query = `${pageName?.original ?? ""}|${(pageName?.versions ?? []).join("|")}`
-
-				return regex.test(query)
-			})
-
-			if (!match) return [...acc, pageName]
-
-			return acc
-		}, [])
-
-	const data = await titlesQuery(
-		pageNames.reduce((acc, pageName) => [...acc, ...pageName.versions], []),
-		{ "User-Agent": userAgent },
+	const data = await titlesQuery(pageNames.flat(Infinity), { "User-Agent": userAgent })
+	const redirects = data?.redirects
+	const pages = Object.values(data?.pages ?? {}).reduce(
+		(acc, page) => (page.missing === "" ? acc : [...acc, page.title]),
+		[]
 	)
-
-	const redirects = data.redirects
-	const pages = Object.values(data?.pages ?? {})
-		.filter(page => page.missing !== "")
-		.map(page => page.title)
 	const results = pageNames
-		.map(pageName => {
-			const foundVersions = pageName.versions.reduce((acc, version) => {
+		.map(variants => {
+			// checks each page in pages for a match against each variation of the page name variants given
+			const foundVersions = variants.reduce((acc, version) => {
+				// implicit redirects (such as different letter cases), as well as direct page matches
+				// will typically be under the pages value
 				if (pages.includes(version)) {
 					if (acc.find(found => found.to === version)) return acc
 
 					return [...acc, { from: version, to: version }]
 				}
 
+				// explicit redirects will be under the redirects value (i.e. BEWD -> Blue-Eyes White Dragon)
 				const foundRedirect = redirects.find(({ from }) => from === version)
 
 				if (foundRedirect) {
@@ -67,12 +47,12 @@ const findRedirects = async (pageNames, userAgent) => {
 				return acc
 			}, [])
 
+			// if multiple pages were found, we don't know which one to return
 			if (foundVersions.length > 1) {
-				// produce error -> ambiguous results, should not continue, produce {code: 404}
 				addError({
 					code: 404,
 					log: {
-						message: `Ambiguous data found for the page "${pageName.original}", couldn't parse.`,
+						message: `Ambiguous data found for the page "${variants[0]}", couldn't parse.`,
 						context: foundVersions,
 					},
 				})
@@ -80,11 +60,11 @@ const findRedirects = async (pageNames, userAgent) => {
 				return
 			}
 
+			// if no pages were found, we can't go any further
 			if (foundVersions.length === 0) {
-				// produce error -> no results, should not continue, produce {code: 404}
 				addError({
 					code: 404,
-					log: { message: `No data could be found for the page "${pageName.original}"` },
+					log: { message: `No data could be found for the page "${variants[0]}"` },
 				})
 
 				return
