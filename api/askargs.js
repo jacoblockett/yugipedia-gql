@@ -1,5 +1,3 @@
-import axios from "axios"
-import limiter from "./limiter.js"
 import { ENDPOINT } from "../utils/constants.js"
 import { get } from "./axios.js"
 import chunk from "lodash.chunk"
