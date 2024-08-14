@@ -11,13 +11,12 @@ import {
 } from "graphql"
 import parseRequestedFields from "../parse/parseCardFields.js"
 import getCardsByName from "../queries/getCardsByName.js"
-import {
-	getCardsBySetNameResolver,
-	getManyCardsByNameResolver,
-	getManySetsByNameResolver,
-	getOneCardByNameResolver,
-	getOneSetByNameResolver,
-} from "./resolvers.js"
+
+import getCardsBySetNameResolver from "./resolvers/getCardsBySetName.js"
+import getManyCardsByNameResolver from "./resolvers/getManyCardsByName.js"
+import getManySetsByNameResolver from "./resolvers/getManySetsByName.js"
+import getOneCardByNameResolver from "./resolvers/getOneCardByName.js"
+import getOneSetByNameResolver from "./resolvers/getOneSetByName.js"
 import { categoryMembersQuery } from "../api/query.js"
 import { addError, addErrorAndExit } from "../utils/errorStore.js"
 
