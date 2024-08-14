@@ -3,9 +3,26 @@ import isStringArray from "../utils/isStringArray.js"
 import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
 import FatalError from "../utils/FatalError.js"
+import getPageNameVariants from "../utils/getPageNameVariants.js"
 
 const getSetsByName = async (names, printouts, { userAgent }) => {
 	if (!isStringArray(names)) FatalError(`Expected names to be an array of strings`, names)
+
+	names = names.map(getPageNameVariants).reduce((acc, variants) => {
+		const dupeIndex = acc.findIndex(uniqueLists =>
+			uniqueLists.some(uniqueVariant => variants.includes(uniqueVariant))
+		)
+
+		if (dupeIndex >= 0) {
+			acc[dupeIndex] = [...new Set([...acc[dupeIndex], ...variants])]
+		} else {
+			acc.push(variants)
+		}
+
+		return acc
+	}, [])
+
+	// check for cache here?
 
 	names = await findRedirects(names, userAgent)
 
@@ -14,7 +31,7 @@ const getSetsByName = async (names, printouts, { userAgent }) => {
 	const data = await askargs(
 		{ "User-Agent": userAgent },
 		names.map(name => name.to),
-		printouts,
+		printouts
 	)
 
 	return await Promise.all(
@@ -32,7 +49,7 @@ const getSetsByName = async (names, printouts, { userAgent }) => {
 			}
 
 			return await formatSetData({ ...setData, rpno: { from, to } }) // rpno - redirected page name object
-		}),
+		})
 	)
 }
 
