@@ -187,18 +187,17 @@ This wrapper will make an attempt to resolve redirects as best as possible. It d
 * `"legend_of_blue_eyes_white_dragon"`
 * `"leGEND Of Blue eyeS whitE DRaGON"`
 
-
 It's not infallible, unfortunately, so do try your best to make sure you spell things correctly.
 
 ## Errors/Warnings
 
-Errors have recently been overhauled to be more reliable and informative. The errors and warnings keys are nullable, meaning they will be `null` if nothing populated them. If something exists, they will be an array of errors or warnings respectively.
+The errors and warnings keys you'll receive are nullable, meaning they will be `null` if nothing populated them. If something exists, they will be an array of errors or warnings respectively.
 
 #### Basic Categories:
 
 * __`3xx`__ - These are reserved for warnings
 * __`4xx`__ - These are reserved for errors originating from data collection, such as scraping and/or API errors
-* __`5xx`__ - These are reserved for internal errors, such as GQL query syntax errors or fatal errors (usually my fault; sorry in advance!)
+* __`5xx`__ - These are reserved for internal errors, specifically GQL query syntax errors
 
 #### Breakdown - 3xx:
 
@@ -213,8 +212,12 @@ Errors have recently been overhauled to be more reliable and informative. The er
 * __`404 <Data Not Found>`__ - The data you requested doesn't exist as a resource on the providing server. This will most likely occur due to spelling errors.
 
 #### Breakdown - 5xx:
-* __`500 <GQL Error>`__ - These errors are produced by the underlying GraphQL interpreter, usually denoting syntax errors or issues.
-* __`501 <Unknown Error>`__ - The errors that was raised is known to be unknown. These will be random, uncaught and untested errors that are thrown by anyone from anywhere down the chain. These shouldn't be common, but still might occur.
+* __`500 <Internal Error>`__ - These errors are produced by the underlying GraphQL interpreter, usually denoting syntax errors or issues. If you find this error causes consistent, repeatable issues for you, please create an issue and I'll take a look at it.
+* __`501 <Unknown Error>`__ - The error that was raised is hasn't been classified or foreseen. These will be random, uncaught and untested errors that are thrown by anyone from anywhere down the chain. These shouldn't be common, but still might occur.
+
+#### FatalError:
+
+You may sometimes be presented with a FatalError. These errors are internal to the scraping and data collection code and are 9.9x out of 10 caused by my missing a bug, or even potentially a breaking change to a website or API the code is using. If you see this kind of error, please create an issue immediately as it's likely not a fluke.
 
 ## Schema
 
