@@ -2,9 +2,9 @@ import parseCardFields from "../../parse/parseCardFields.js"
 import getCardsByName from "../../queries/getCardsByName.js"
 import { addWarning } from "../../utils/warningStore.js"
 
-export default async (name, context, info) => {
+export default async (name, info) => {
 	const printouts = parseCardFields(info)
-	const data = await getCardsByName([name], printouts, context)
+	const data = await getCardsByName([name], printouts)
 
 	if (!data.length)
 		addWarning({

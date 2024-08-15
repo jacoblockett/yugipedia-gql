@@ -566,7 +566,7 @@ const schema = new GraphQLSchema({
 				args: { searchTerm: { type: new GraphQLNonNull(GraphQLString) } },
 				resolve: async (_, { searchTerm }, context, info) => {
 					try {
-						return await getOneCardByNameResolver(searchTerm, context, info)
+						return await getOneCardByNameResolver(searchTerm, info)
 					} catch (error) {
 						if (!error.isKnownError) {
 							addError({
