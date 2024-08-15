@@ -4,8 +4,10 @@ import findRedirects from "./findRedirects.js"
 import askargs from "../api/askargs.js"
 import FatalError from "../utils/FatalError.js"
 import getPageNameVariants from "../utils/getPageNameVariants.js"
+import globalValues from "../utils/globalValues.js"
+import { findRedirectFromVariants, insertRedirect } from "../utils/cache.js"
 
-const getCardsByName = async (names, printouts, { userAgent }) => {
+const getCardsByName = async (names, printouts) => {
 	if (!isStringArray(names)) FatalError(`Expected names to be an array of strings`, names)
 
 	names = names.map(getPageNameVariants).reduce((acc, variants) => {
@@ -22,14 +24,22 @@ const getCardsByName = async (names, printouts, { userAgent }) => {
 		return acc
 	}, [])
 
-	// check for cache here?
+	// first, check for any cached redirects
 
-	names = await findRedirects(names, userAgent)
+	const cachedRedirects = names.map(findRedirectFromVariants).filter(truthy => truthy)
+
+	if (cachedRedirects.length) {
+		console.log("found redirects in cache")
+		names = cachedRedirects
+	} else {
+		console.log("no redirects in cache")
+		names = await findRedirects(names)
+	}
 
 	if (!names.length) return []
 
 	const data = await askargs(
-		{ "User-Agent": userAgent },
+		{ "User-Agent": globalValues.userAgent },
 		names.map(name => name.to),
 		printouts
 	)
@@ -47,6 +57,8 @@ const getCardsByName = async (names, printouts, { userAgent }) => {
 				})
 				return
 			}
+
+			insertRedirect(from, to)
 
 			return await formatCardData({ ...cardData, rpno: { from, to } }) // rpno - redirected page name object
 		})

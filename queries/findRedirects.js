@@ -1,23 +1,22 @@
 import { titlesQuery } from "../api/query.js"
 import { addError } from "../utils/errorStore.js"
 import FatalError from "../utils/FatalError.js"
+import globalValues from "../utils/globalValues.js"
 import isStringArray from "../utils/isStringArray.js"
 
 /**
  * Attempts to find the final destination page of any and all given page names.
  *
- * @see ~/index.js for user agent documentation
- *
  * @param {string[][]} pageNames An array of page name variants to search redirects for. It will be assumed that the first name in each list is the original page name provided by the user, and each subsequent name is a calculated variant
- * @param {{name: string, contact: string, reason?: string}} userAgent The user agent to use when making page queries - this should be the userAgent provided by the user on the main constructor
  * @returns {{from: string, to: string}[]}
  */
-const findRedirects = async (pageNames, userAgent) => {
+const findRedirects = async pageNames => {
 	if (!Array.isArray(pageNames)) FatalError(`Expected pageNames to be an array`, pageNames)
 	if (pageNames.some(variants => !isStringArray(variants)))
 		FatalError(`Expected pageNames to be an array of strings`, pageNames)
 
-	const data = await titlesQuery(pageNames.flat(Infinity), { "User-Agent": userAgent })
+	const flattenedPageNames = pageNames.flat(Infinity)
+	const data = await titlesQuery(flattenedPageNames, { "User-Agent": globalValues.userAgent })
 	const redirects = data?.redirects
 	const pages = Object.values(data?.pages ?? {}).reduce(
 		(acc, page) => (page.missing === "" ? acc : [...acc, page.title]),
