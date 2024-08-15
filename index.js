@@ -1,5 +1,4 @@
-import axios from "axios"
-import chalk from "chalk"
+import globalValues from "./utils/globalValues.js"
 import { graphql, parse } from "graphql"
 import schema from "./gql/schema.js"
 import splitGQLQueries from "./utils/splitGQLQueries.js"
@@ -12,31 +11,29 @@ class Yugipedia {
 	 *
 	 * @link https://yugipedia.com/wiki/Yugipedia:API
 	 *
-	 * @param {{name: string, contact: string, reason?: string}} userAgent User-Agent details for the api devs to track/contact you by in case concerns are risen. Subvert at risk of being temp/perma-banned without recourse.
-	 * @param {string} userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
-	 * @param {string} userAgent.contact The best way contact you should the api devs have concerns
-	 * @param {string} [userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use [Yugipedia-GQL]"`
-	 *
-	 * @param {{hydratePrototype: boolean}} options
-	 * @param {boolean} [options.hydratePrototype] Weather to hydrate the prototype of the resulting data. Defaults to true.
+	 * @param {{hydratePrototype: boolean, userAgent: {name: string, contact: string, reason?: string}}} options
+	 * @param {boolean} [options.hydratePrototype] Whether to hydrate the prototype of the resulting data. Defaults to true.
+	 * @param {string} options.userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
+	 * @param {string} options.userAgent.contact The best way contact you should the api devs have concerns
+	 * @param {string} [options.userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use [Yugipedia-GQL]"`
 	 */
-	constructor(userAgent, options) {
-		if (Object.prototype.toString.call(userAgent) !== "[object Object]")
-			throw new TypeError(`Expected userAgent to be an object`)
-
-		if (typeof userAgent.name !== "string" || userAgent.name.length < 1)
-			throw new TypeError(`Expected userAgent.name to be a non-empty string`)
-		if (typeof userAgent.contact !== "string" || userAgent.contact.length < 1)
-			throw new TypeError(`Expected userAgent.contact to be a non-empty string`)
-
-		if (userAgent.reason === undefined)
-			userAgent.reason = "Data Collection for Personal Use [Yugipedia-GQL]"
-		if (typeof userAgent.reason !== "string" || userAgent.reason.length < 1)
-			throw new TypeError(`Expected userAgent.reason to be a non-empty string`)
-
-		this.userAgent = `name/${userAgent.name} contact/${userAgent.contact} reason/${userAgent.reason} node.js/${process.version} axios/^1.6.7`
-
+	constructor(options) {
 		if (Object.prototype.toString.call(options) !== "[object Object]") options = {}
+
+		if (Object.prototype.toString.call(options.userAgent) !== "[object Object]")
+			throw new TypeError(`Expected options.userAgent to be an object`)
+
+		if (typeof options.userAgent.name !== "string" || options.userAgent.name.length < 1)
+			throw new TypeError(`Expected options.userAgent.name to be a non-empty string`)
+		if (typeof options.userAgent.contact !== "string" || options.userAgent.contact.length < 1)
+			throw new TypeError(`Expected options.userAgent.contact to be a non-empty string`)
+
+		if (options.userAgent.reason === undefined)
+			options.userAgent.reason = "Data Collection for Personal Use [Yugipedia-GQL]"
+		if (typeof options.userAgent.reason !== "string" || options.userAgent.reason.length < 1)
+			throw new TypeError(`Expected options.userAgent.reason to be a non-empty string`)
+
+		globalValues.userAgent = `name/${options.userAgent.name} contact/${options.userAgent.contact} reason/${options.userAgent.reason} node.js/${process.version} axios/v1.7.3`
 
 		if (typeof options.hydratePrototype !== "boolean") options.hydratePrototype = true
 
@@ -57,11 +54,9 @@ class Yugipedia {
 
 		for (let i = 0; i < queries.length; i++) {
 			const { name: resultName, query: source } = queries[i]
-			const contextValue = { userAgent: this.userAgent }
 			const response = await graphql({
 				schema,
 				source,
-				contextValue,
 				variableValues: variables,
 			})
 
@@ -71,7 +66,7 @@ class Yugipedia {
 					results.errors.push({
 						culprit: resultName,
 						code: 500,
-						log: { message: `A GQL error occurred.`, payload: response.errors },
+						log: { message: `A GQL error occurred.`, payload: error },
 					})
 				}
 			}
