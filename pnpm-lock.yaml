@@ -11,6 +11,9 @@ importers:
       axios:
         specifier: ^1.7.3
         version: 1.7.3
+      better-sqlite3:
+        specifier: ^11.1.2
+        version: 11.1.2
       bottleneck:
         specifier: ^2.19.5
         version: 2.19.5
@@ -20,6 +23,9 @@ importers:
       cheerio:
         specifier: ^1.0.0
         version: 1.0.0
+      date-fns:
+        specifier: ^3.6.0
+        version: 3.6.0
       elmara:
         specifier: ^0.1.0
         version: 0.1.0
@@ -44,9 +50,6 @@ importers:
       ora:
         specifier: ^8.0.1
         version: 8.0.1
-      perma.db:
-        specifier: ^0.0.3
-        version: 0.0.3
       puppeteer:
         specifier: ^23.0.2
         version: 23.0.2
@@ -215,8 +218,8 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  better-sqlite3@9.6.0:
-    resolution: {integrity: sha512-yR5HATnqeYNVnkaUTf4bOP2dJSnyhP4puJN/QPRyx4YkBEEUxib422n2XzPqDEHjQQqazoYoADdAm5vE15+dAQ==}
+  better-sqlite3@11.1.2:
+    resolution: {integrity: sha512-gujtFwavWU4MSPT+h9B+4pkvZdyOUkH54zgLdIrMmmmd4ZqiBIrRNBzNzYVFO417xo882uP5HBu4GjOfaSrIQw==}
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -347,6 +350,9 @@ packages:
   data-uri-to-buffer@6.0.2:
     resolution: {integrity: sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw==}
     engines: {node: '>= 14'}
+
+  date-fns@3.6.0:
+    resolution: {integrity: sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==}
 
   debug@4.3.6:
     resolution: {integrity: sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==}
@@ -868,12 +874,6 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
-  perma.db@0.0.2:
-    resolution: {integrity: sha512-OYbkuWbXCQxZtLLPrv2W3+z87cgj4lTlyhON0i+PYeYcc9RVchwStKI0/HFVIvcqMfH0ZG6UZ531YB4anaoj4A==}
-
-  perma.db@0.0.3:
-    resolution: {integrity: sha512-pvffi+8fuOJdpHWMnuIrEn4Mp4uT0LgL4MsyjAla8kOOSnvtYQBWPTIlw6Wssk9xa0jCPCMHL/So9h9imc+tng==}
-
   picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
 
@@ -1374,7 +1374,7 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  better-sqlite3@9.6.0:
+  better-sqlite3@11.1.2:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.2
@@ -1532,6 +1532,8 @@ snapshots:
   css-what@6.1.0: {}
 
   data-uri-to-buffer@6.0.2: {}
+
+  date-fns@3.6.0: {}
 
   debug@4.3.6:
     dependencies:
@@ -2079,15 +2081,6 @@ snapshots:
       minipass: 7.1.2
 
   pend@1.2.0: {}
-
-  perma.db@0.0.2:
-    dependencies:
-      better-sqlite3: 9.6.0
-
-  perma.db@0.0.3:
-    dependencies:
-      better-sqlite3: 9.6.0
-      perma.db: 0.0.2
 
   picocolors@1.0.1: {}
 
