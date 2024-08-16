@@ -2,9 +2,9 @@ import parseSetFields from "../../parse/parseSetFields.js"
 import getSetsByName from "../../queries/getSetsByName.js"
 import { addWarning } from "../../utils/warningStore.js"
 
-export default async (name, context, info) => {
+export default async (name, info) => {
 	const printouts = parseSetFields(info)
-	const data = await getSetsByName([name], printouts, context)
+	const data = await getSetsByName([name], printouts)
 
 	if (!data.length)
 		addWarning({

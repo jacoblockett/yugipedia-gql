@@ -223,9 +223,9 @@ const Materials = new GraphQLObjectType({
 	fields: () => ({
 		required: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ required }, _, context, info) => {
+			resolve: async ({ required }, _, __, info) => {
 				try {
-					return await getManyCardsByNameResolver(required ?? [], context, info)
+					return await getManyCardsByNameResolver(required ?? [], info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -240,9 +240,9 @@ const Materials = new GraphQLObjectType({
 		},
 		usedFor: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ usedFor }, _, context, info) => {
+			resolve: async ({ usedFor }, _, __, info) => {
 				try {
-					return await getManyCardsByNameResolver(usedFor ?? [], context, info)
+					return await getManyCardsByNameResolver(usedFor ?? [], info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -433,9 +433,9 @@ const Card = new GraphQLObjectType({
 		mediums: { type: NonNullInnerList(GraphQLString) },
 		mentions: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ mentions }, _, context, info) => {
+			resolve: async ({ mentions }, _, __, info) => {
 				try {
-					return await getManyCardsByNameResolver(mentions ?? [], context, info)
+					return await getManyCardsByNameResolver(mentions ?? [], info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -464,9 +464,9 @@ const Card = new GraphQLObjectType({
 		status: { type: Status },
 		summonedBy: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ summonedBy }, _, context, info) => {
+			resolve: async ({ summonedBy }, _, __, info) => {
 				try {
-					return await getManyCardsByNameResolver(summonedBy ?? [], context, info)
+					return await getManyCardsByNameResolver(summonedBy ?? [], info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -489,9 +489,9 @@ const Set = new GraphQLObjectType({
 	fields: () => ({
 		cards: {
 			type: CardList,
-			resolve: async ({ page }, _, context, info) => {
+			resolve: async ({ page }, _, __, info) => {
 				try {
-					return await getCardsBySetNameResolver(page?.name, context, info)
+					return await getCardsBySetNameResolver(page?.name, info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -507,9 +507,9 @@ const Set = new GraphQLObjectType({
 		code: { type: ProductCode },
 		coverCards: {
 			type: NonNullInnerList(Card),
-			resolve: async ({ coverCards }, _, context, info) => {
+			resolve: async ({ coverCards }, _, __, info) => {
 				try {
-					return await getManyCardsByNameResolver(coverCards ?? [], context, info)
+					return await getManyCardsByNameResolver(coverCards ?? [], info)
 				} catch (error) {
 					if (!error.isKnownError) {
 						addError({
@@ -530,10 +530,10 @@ const Set = new GraphQLObjectType({
 		page: { type: WikiPage },
 		parent: {
 			type: Set,
-			resolve: async ({ parent }, _, context, info) => {
+			resolve: async ({ parent }, _, __, info) => {
 				if (parent) {
 					try {
-						return await getOneSetByNameResolver(parent, context, info)
+						return await getOneSetByNameResolver(parent, info)
 					} catch (error) {
 						if (!error.isKnownError) {
 							addError({
@@ -564,7 +564,7 @@ const schema = new GraphQLSchema({
 			card: {
 				type: Card,
 				args: { searchTerm: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { searchTerm }, context, info) => {
+				resolve: async (_, { searchTerm }, __, info) => {
 					try {
 						return await getOneCardByNameResolver(searchTerm, info)
 					} catch (error) {
@@ -582,9 +582,9 @@ const schema = new GraphQLSchema({
 			set: {
 				type: Set,
 				args: { searchTerm: { type: new GraphQLNonNull(GraphQLString) } },
-				resolve: async (_, { searchTerm }, context, info) => {
+				resolve: async (_, { searchTerm }, __, info) => {
 					try {
-						return await getOneSetByNameResolver(searchTerm, context, info)
+						return await getOneSetByNameResolver(searchTerm, info)
 					} catch (error) {
 						if (!error.isKnownError) {
 							addError({

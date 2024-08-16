@@ -5,7 +5,7 @@ import getCardsByName from "../../queries/getCardsByName.js"
 import addKeyTraceToObject from "../../utils/addKeyTraceToObject.js"
 import { addWarning } from "../../utils/warningStore.js"
 
-export default async (setName, context, info) => {
+export default async (setName, info) => {
 	const languages = parseSetCardListFields(info)
 	const originLanguages = languages.map(([language]) => language)
 	const allCardsInSet = await scrapeSetCardLists(setName, originLanguages)
@@ -42,7 +42,7 @@ export default async (setName, context, info) => {
 		const cardIdentifiers = cardChunk.map(
 			chunk => chunk.cardNumber || chunk.englishName || chunk.name
 		)
-		const cardData = await getCardsByName(cardIdentifiers, printouts, context)
+		const cardData = await getCardsByName(cardIdentifiers, printouts)
 		const appendedCardData = cardChunk.map(
 			({ cardNumber, englishName, name, notes, print, rarity, setCategory }) => {
 				const lookupCard = cardData.find(

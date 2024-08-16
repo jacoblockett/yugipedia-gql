@@ -52,7 +52,7 @@ const getRedirects = async pageNames => {
 					code: 404,
 					log: {
 						message: `Ambiguous data found for the page "${variants[0]}", couldn't parse.`,
-						context: foundVersions,
+						payload: foundVersions,
 					},
 				})
 

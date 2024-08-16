@@ -5,8 +5,6 @@ const isPositiveNumber = value => typeof value === "number" && !isNaN(value) && 
 
 class ClusterBrowser {
 	/**
-	 * @typedef {import("puppeteer").PuppeteerLaunchOptions} PuppeteerLaunchOptions
-	 *
 	 * @param {{
 	 * 		concurrency: "CONCURRENCY_PAGE"|"CONCURRENCY_CONTEXT"|"CONCURRENCY_BROWSER"
 	 * 		maxConcurrency: number
@@ -22,10 +20,10 @@ class ClusterBrowser {
 		if (!isObject(options)) options = {}
 		if (
 			!["CONCURRENCY_PAGE", "CONCURRENCY_CONTEXT", "CONCURRENCY_BROWSER"].includes(
-				options.concurreny,
+				options.concurrency
 			)
 		)
-			options.concurreny = "CONCURRENCY_CONTEXT"
+			options.concurrency = "CONCURRENCY_CONTEXT"
 		if (!isPositiveNumber(options.maxConcurrency)) options.maxConcurrency = 1
 		if (!isObject(options.puppeteerOptions)) options.puppeteerOptions = { headless: "new" }
 		if (!isPositiveNumber(options.retryLimit)) options.retryLimit = 0
@@ -37,7 +35,7 @@ class ClusterBrowser {
 		// explicitly setting in case any unknown options were passed through options object
 		// https://www.npmjs.com/package/puppeteer-cluster#clusterlaunchoptions
 		this.browserOptions = {
-			concurreny: Cluster[options.concurreny],
+			concurreny: Cluster[options.concurrency],
 			maxConcurrency: options.maxConcurrency,
 			puppeteerOptions: options.puppeteerOptions,
 			retryLimit: options.retryLimit,

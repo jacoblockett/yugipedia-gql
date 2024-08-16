@@ -6,7 +6,7 @@ import { addError } from "../utils/errorStore.js"
 import { addWarning } from "../utils/warningStore.js"
 import limiter from "./limiter.js"
 
-const browser = new ClusterBrowser({ retryLimit: 3 })
+const browser = new ClusterBrowser({ retryLimit: 3, puppeteerOptions: { headless: "new" } })
 
 // need to bind the browser's 'this' object to the runTaskOnList function because
 // wrapping it in the limiter santizes the 'this' object prior to running
@@ -16,7 +16,7 @@ const createURL = title => `${INDEX_ENDPOINT}?title=${title}&mobileaction=toggle
 export const scrapeSetCardLists = async (setName, languages) => {
 	if (typeof setName !== "string") FatalError(`Expected setName to be a string`)
 
-	setName = (await getRedirects([setName]))?.[0]?.to
+	setName = (await getRedirects([[setName]]))?.[0]?.to
 
 	const lists = await runTaskOnList(
 		async (page, { setName, languages }) => {
