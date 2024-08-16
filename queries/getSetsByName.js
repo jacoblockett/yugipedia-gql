@@ -1,6 +1,6 @@
 import formatSetData from "../format/formatSetData.js"
 import isStringArray from "../utils/isStringArray.js"
-import findRedirects from "./findRedirects.js"
+import getRedirects from "./getRedirects.js"
 import askargs from "../api/askargs.js"
 import FatalError from "../utils/FatalError.js"
 import getPageNameVariants from "../utils/getPageNameVariants.js"
@@ -24,7 +24,7 @@ const getSetsByName = async (names, printouts, { userAgent }) => {
 
 	// check for cache here?
 
-	names = await findRedirects(names, userAgent)
+	names = await getRedirects(names, userAgent)
 
 	if (!names.length) return []
 

@@ -1,4 +1,4 @@
-import findRedirects from "../queries/findRedirects.js"
+import getRedirects from "../queries/getRedirects.js"
 import ClusterBrowser from "../utils/ClusterBrowser.js"
 import FatalError from "../utils/FatalError.js"
 import { INDEX_ENDPOINT, WIKI_ENDPOINT } from "../utils/constants.js"
@@ -16,12 +16,12 @@ const createURL = title => `${INDEX_ENDPOINT}?title=${title}&mobileaction=toggle
 export const scrapeSetCardLists = async (setName, languages) => {
 	if (typeof setName !== "string") FatalError(`Expected setName to be a string`)
 
-	setName = (await findRedirects([setName]))?.[0]?.to
+	setName = (await getRedirects([setName]))?.[0]?.to
 
 	const lists = await runTaskOnList(
 		async (page, { setName, languages }) => {
 			await page.setUserAgent(
-				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 			)
 			await page.setViewport({ width: 1920, height: 1080 })
 
@@ -33,7 +33,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 			const setNavigation = await page.evaluate(async _ => {
 				return Array.from(
-					document.querySelectorAll(".set-navigation > .set-navigation__row.hlist dl"),
+					document.querySelectorAll(".set-navigation > .set-navigation__row.hlist dl")
 				).reduce((acc, node) => {
 					const title = node.querySelector("dt").textContent
 					const items = Array.from(node.querySelectorAll("dd a")).reduce((acc, node) => {
@@ -60,11 +60,9 @@ export const scrapeSetCardLists = async (setName, languages) => {
 									.trim()
 									.split(/[^a-zA-Z0-9]+/)
 									.map((w, i) =>
-										i < 1
-											? w.toLowerCase()
-											: `${w[0].toUpperCase()}${w.substring(1).toLowerCase()}`,
+										i < 1 ? w.toLowerCase() : `${w[0].toUpperCase()}${w.substring(1).toLowerCase()}`
 									)
-									.join(""),
+									.join("")
 							)
 							const rows = Array.from(node.querySelectorAll("table tbody tr")).reduce(
 								(acc, node) => {
@@ -90,7 +88,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 															return acc
 														},
-														[[]],
+														[[]]
 													)
 													.flat(3)
 
@@ -122,7 +120,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 												...(setCategory ? { setCategory } : {}),
 											}
 										},
-										{},
+										{}
 									)
 									const { rarities, ...rest } = cells
 									const split = Array.from({ length: rarities.length }, (_, i) => ({
@@ -132,7 +130,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 									return [...acc, ...split]
 								},
-								[],
+								[]
 							)
 
 							return [...acc, ...rows]
@@ -140,7 +138,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 						return { ...acc, [language]: list }
 					},
-					{},
+					{}
 				)
 			}
 
@@ -158,9 +156,9 @@ export const scrapeSetCardLists = async (setName, languages) => {
 							.trim()
 							.split(/[^a-zA-Z0-9]+/)
 							.map((w, i) =>
-								i < 1 ? w.toLowerCase() : `${w[0].toUpperCase()}${w.substring(1).toLowerCase()}`,
+								i < 1 ? w.toLowerCase() : `${w[0].toUpperCase()}${w.substring(1).toLowerCase()}`
 							)
-							.join(""),
+							.join("")
 					)
 					const rows = Array.from(node.querySelectorAll("table tbody tr")).reduce((acc, node) => {
 						const cells = Array.from(node.querySelectorAll("td")).reduce(
@@ -185,7 +183,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 												return acc
 											},
-											[[]],
+											[[]]
 										)
 										.flat(3)
 
@@ -212,7 +210,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 								return { ...acc, [header]: item, ...(notes ? { notes } : {}) }
 							},
-							{},
+							{}
 						)
 						const { rarities, ...rest } = cells
 						const split = Array.from({ length: rarities.length }, (_, i) => ({
@@ -262,7 +260,7 @@ export const scrapeSetCardLists = async (setName, languages) => {
 
 			return cardListData
 		},
-		[{ setName, languages }],
+		[{ setName, languages }]
 	)
 
 	if (lists?.[0]?.error) {

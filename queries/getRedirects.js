@@ -10,7 +10,7 @@ import isStringArray from "../utils/isStringArray.js"
  * @param {string[][]} pageNames An array of page name variants to search redirects for. It will be assumed that the first name in each list is the original page name provided by the user, and each subsequent name is a calculated variant
  * @returns {{from: string, to: string}[]}
  */
-const findRedirects = async pageNames => {
+const getRedirects = async pageNames => {
 	if (!Array.isArray(pageNames)) FatalError(`Expected pageNames to be an array`, pageNames)
 	if (pageNames.some(variants => !isStringArray(variants)))
 		FatalError(`Expected pageNames to be an array of strings`, pageNames)
@@ -76,4 +76,4 @@ const findRedirects = async pageNames => {
 	return results
 }
 
-export default findRedirects
+export default getRedirects
