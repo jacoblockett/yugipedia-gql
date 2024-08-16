@@ -4,6 +4,8 @@ import schema from "./gql/schema.js"
 import splitGQLQueries from "./utils/splitGQLQueries.js"
 import errorStore, { clearErrors } from "./utils/errorStore.js"
 import warningStore, { clearWarnings } from "./utils/warningStore.js"
+import path from "path"
+import { createCache, purgeExpiredData } from "./utils/cache.js"
 
 class Yugipedia {
 	/**
@@ -11,11 +13,15 @@ class Yugipedia {
 	 *
 	 * @link https://yugipedia.com/wiki/Yugipedia:API
 	 *
-	 * @param {{hydratePrototype: boolean, userAgent: {name: string, contact: string, reason?: string}}} options
-	 * @param {boolean} [options.hydratePrototype] Whether to hydrate the prototype of the resulting data. Defaults to true.
+	 * @type {{years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number}} TTLObject
+	 *
+	 * @param {{hydratePrototype: boolean, userAgent: {name: string, contact: string, reason?: string}, cache?: {path?: string, ttl?: TTLObject }}}} options
+	 * @param {boolean} [options.hydratePrototype] Whether to hydrate the prototype of the resulting data. Defaults to `true`.
 	 * @param {string} options.userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
 	 * @param {string} options.userAgent.contact The best way contact you should the api devs have concerns
 	 * @param {string} [options.userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use [Yugipedia-GQL]"`
+	 * @param {string} [options.cache.path] The path to the cache file. Defaults to `{cwd}/yugipedia-gql-cache`
+	 * @param {TTLObject} [options.cache.ttl] The time-to-live for each cache entry. Defaults to `{days: 30}`. Set to an empty object if you want to bypass caching (not recommended).
 	 */
 	constructor(options) {
 		if (Object.prototype.toString.call(options) !== "[object Object]") options = {}
@@ -37,6 +43,18 @@ class Yugipedia {
 
 		if (typeof options.hydratePrototype !== "boolean") options.hydratePrototype = true
 
+		if (typeof options?.cache?.path === "string")
+			globalValues.cache.path = path.resolve(options.cache.path)
+		if (Object.prototype.toString.call(options?.cache?.ttl) === "[object Object]")
+			globalValues.cache.ttl = {
+				years: options.cache.ttl.years || 0,
+				months: options.cache.ttl.months || 0,
+				days: options.cache.ttl.days || 0,
+				hours: options.cache.ttl.hours || 0,
+				minutes: options.cache.ttl.minutes || 0,
+				seconds: options.cache.ttl.seconds || 0,
+			}
+
 		this.options = options
 	}
 
@@ -51,6 +69,9 @@ class Yugipedia {
 
 		const queries = splitGQLQueries(gqlQueryString)
 		const results = { data: { [queryName]: {} }, errors: [], warnings: [] }
+
+		createCache()
+		purgeExpiredData()
 
 		for (let i = 0; i < queries.length; i++) {
 			const { name: resultName, query: source } = queries[i]
