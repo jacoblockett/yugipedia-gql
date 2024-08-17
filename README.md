@@ -2,7 +2,9 @@
 
 A GraphQL wrapper around the [MediaWiki API](https://en.wikipedia.org/wiki/MediaWiki) for [Yugipedia](https://yugipedia.com/wiki/Yugipedia:API). Designed to make the queries and results more intuitive and simple.
 
-> ⚠️ This wrapper is in its very early stages. As new requirements are set and the full design/structure is realized, be prepared for drastic, breaking changes on a regular basis. See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
+> ⚠️ This wrapper is in its early stages. As new requirements are set and the full design/structure is realized, be prepared for drastic, breaking changes on a regular basis. See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
+
+> ⚠️ This codebase isn't always synced up with the version hosted on [NPM](https://www.npmjs.com/package/yugipedia-gql). It is likely this version of the code is ahead in features and bug fixes, but might also be less stable. Clone with optimistic caution.
 
 ## Installation
 
@@ -15,19 +17,85 @@ node -v
 npm -v
 ```
 
-Finally, cd into your directory of choice and create a new npm project:
+Finally, cd into (open) your directory of choice through your terminal/emulator and create a new npm project:
 
 ```shell
-cd "YOUR\\PREFERED\\DIRECTORY"
-
+cd "REPLACE\\WITH\\YOUR\\PATH"
 touch index.js
-
 npm init -y
-
 npm pkg set type="module"
-
 npm i yugipedia-gql
 ```
+
+## API
+
+### class _Yugipedia_
+
+Creates a Yugipedia API entity capable of performing basic operations.
+
+```ts
+new Yugipedia(options: {
+    userAgent: {
+        name: string,
+        contact: string,
+        reason?: string
+    },
+    hydratePrototype?: boolean,
+    cache?: {
+        path?: string,
+        ttl?: {
+            years?: number,
+            months?: number,
+            days?: number,
+            hours?: number,
+            minutes?: number,
+            seconds?: number,
+        }
+    }
+}): Yugipedia
+```
+
+|Argument Name|Type|Optional|Default Value|Description|
+|-|-|-|-|-|
+|`options.userAgent.name`|string|no||The best thing to refer to you as|
+|`options.userAgent.contact`|string|no||The contact details to get a hold of you in case the devs have a question or need to reach out|
+|`[options.userAgent.reason]`|string|yes|`"Data Collection for Personal Use [Yugipedia-GQL]"`|The reason you're using the API|
+|`[options.hydratePrototype]`|boolean|yes|`true`|The returned data's prototype is rehydrated as the GraphQL library nullifies it. This is mostly aesthetic, so if it causes issues, set this to false|
+|`[options.cache]`|object|yes|See below|The cache settings object. Set to false (_not recommended_) if you don't want caching|
+|`[options.cache.path]`|string|yes|`"{cwd}/yugipedia-gql-cache"`|The path to the cache file
+|`[options.cache.ttl]`|object|yes|`{ days: 30 }`|The amount of time after data has been retrieved before it should expire
+
+### _Yugipedia.prototype.query_
+
+```ts
+Yugipedia.prototype.query(
+    gqlQueryString: string,
+    variables?: {[key]: unknown}
+): {
+    data: {[key]: unknown},
+    errors: null | [{
+        culprit: string,
+        code: number,
+        log: {
+            message: string,
+            payload: unknown
+        }
+    }],
+    warnings: null | [{
+        culprit: string,
+        code: number,
+        log: {
+            message: string,
+            payload: unknown
+        }
+    }]
+}
+```
+
+|Argument Name|Type|Optional|Default Value|Description|
+|-|-|-|-|-|
+|`gqlQueryString`|string|no||The GraphQL query string|
+|`variables`|object|yes|`{}`|The variables to use with the query|
 
 ## Usage
 
@@ -35,54 +103,22 @@ A general understanding of the [GraphQL language](https://graphql.org/learn) is 
 
 > 💡 There is no need to roll your own rate limiter as all queries are rate limited to one page per second maximum to align with [the wishes of the API devs. (See: Request limit)](https://yugipedia.com/wiki/Yugipedia:API).
 
-### Signature
-
-```ts
-class Yugipedia {
-    constructor(
-        userAgent: {
-            name: string,
-            contact: string,
-            reason?: string,
-        },
-        options: {
-            hydratePrototype?: boolean,
-        }
-    )
-
-    query(
-        gqlQueryString: string,
-        variables?: {
-            [key: string]: unknown,
-        }
-    ): Promise<{
-        [key: string]: unknown
-    }>
-}
-```
-
-#### Constructor Arguments
-
-* `userAgent.name` - The best thing to refer to you as
-* `userAgent.contact` - The contact details to get a hold of you in case the devs have a question or need to reach out
-* `[userAgent.reason]` - The reason you're using the API (defaults to "Data Collection for Personal Use [Yugipedia-GQL])
-* `[options.hydratePrototype]` - The returned data's prototype is rehydrated as the GraphQL library nullifies it. This is mostly aesthetic, so if it causes issues, set this to false
-___
-
-### Basic Usage
+### Example:
 
 ```js
 import Yugipedia from "yugipedia-gql"
 
 const api = new Yugipedia({
-    name: "YOUR_NAME",
-    contact: "YOUR_CONTACT_INFO",
-    reason: "Testing the GraphQL wrapper for Yugipedia"
+    userAgent: {
+        name: "John Smith", // replace with your name
+        contact: "jsmith@example.com", // replace with your contact method
+        reason: "Testing the GraphQL wrapper for Yugipedia (https://www.npmjs.com/package/yugipedia-gql)"
+    }
 })
 
 const queryString = `#graphql
-    query($searchTerm: String!) {
-        card(searchTerm: $searchTerm) {
+    query {
+        card(searchTerm: "Dark Magician") {
             name {
                 english
                 korean {
@@ -91,39 +127,33 @@ const queryString = `#graphql
             }
             stats {
                 attribute
+                attack
+                defense
             }
             types
         }
     }
 `
-const variables = { searchTerm: "Dark Magician" }
-const result = await api.query(queryString, variables)
+const result = await api.query(queryString)
 
 console.dir(result, { depth: null })
 ```
 
-The above should produce:
+The above result should be:
 
 ```shell
 {
-    data: {
-        query: {
-            card: {
-                name: {
-                    english: 'Dark Magician',
-                    korean: {
-                        html: '블랙 매지션'
-                    }
-                },
-                stats: {
-                    attribute: 'Dark'
-                },
-                types: [ 'Spellcaster', 'Normal' ]
-            }
-        }
-    },
-    errors: null,
-    warnings: null
+	data: {
+		query: {
+			card: {
+				name: { english: 'Dark Magician', korean: { html: '블랙 매지션' } },
+				stats: { attribute: 'Dark', attack: '2500', defense: '2100' },
+				types: ['Spellcaster', 'Normal'],
+			},
+		},
+	},
+	errors: null,
+	warnings: null,
 }
 ```
 
@@ -133,26 +163,26 @@ Currently, there are only two root queries
 
 ```gql
 card(searchTerm: String!): Card
-
 set(searchTerm: String!): Set
 ```
 
-The `searchTerm` for each root query can be anything you think will match a page of that type on Yugipedia. So, that means if Yugipedia recognizes it and can redirect to it, you're probably in business. For example, let's say we wanted info on the Legend of Blue Eyes White Dragon set. We could use the `set` root query with the following `searchTerm`'s:
+The `searchTerm` for each root query can be anything you think will match a page of that type on Yugipedia. So, that means if Yugipedia recognizes it and can redirect to it, you're probably in business. For example, let's say we wanted info on the [_Legend of Blue Eyes White Dragon_](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) set. We could use the `set` root query with any of the following `searchTerm`'s:
 
 - `"LOB"`
 - `"LDD"`
 - `"LOB-EN"`
 - `"Legend of Blue Eyes White Dragon"`
 
-All of these should end up querying the correct set we were looking for. And for the Blue-Eyes White Dragon card, for example, we could query the `card` root query with the following `searchTerm`'s and we could expect accurate results:
+All of these should end up querying the correct set we were looking for. And for the [_Blue-Eyes White Dragon_](https://yugipedia.com/wiki/Blue-Eyes_White_Dragon) card, for example, we could query the `card` root query with the following `searchTerm`'s and we could expect accurate results:
 
 - `"BEWD"`
 - `"Blue-Eyes White Dragon"`
+- `"Blue Eyes White Dragon"`
 - `"LOB-EN001"`
 - `"89631139"` (the card's password)
 - `"...etc."`
 
-The wrapper will do its best to take the `searchTerm` you provide and resolve it to the page it thinks you want, but be assured it will not make any assumptions should it find ambiguous results. It strictly relies on the underlying API's ability to resolve page name redirects, but will make some case and symbol adjustments to help find things should there be a slight discrepancy. More on how redirects are handled can be found below.
+The wrapper will do its best to take the `searchTerm` you provide and resolve it to the page it thinks you want, but be assured it will not make any assumptions should it find ambiguous results. It strictly relies on the underlying API's ability to resolve page name redirects, but will make some case and symbol adjustments to help find things should there be a slight discrepancy. More on how redirects are handled can be found in [this section](#redirects).
 
 ___
 
@@ -163,12 +193,26 @@ The basic structure of a query result will have the following shape:
     data: {
         [key: queryTitle]: {
             [key: rootQueryName]: {
-                ...any // whatever your requested data shape looks like
+                ...unknown // whatever your requested data shape looks like
             }
         }
     },
-    errors: null | [{ code: number, log: { message: string, payload?: unknown } }],
-    warnings: null | [{ code: number, log: { message: string, payload?: unknown } }],
+    errors: null | [{
+        culprit: string,
+        code: number,
+        log: {
+            message: string,
+            payload?: unknown
+        }
+    }],
+    warnings: null | [{
+        culprit: string,
+        code: number,
+        log: {
+            message: string,
+            payload?: unknown
+        }
+    }], // same signature as the errors key
 }
 ```
 ___
@@ -177,7 +221,7 @@ _Stay tuned, more details and explanations to come..._
 
 ## Redirects
 
-This wrapper will make an attempt to resolve redirects as best as possible. It does so by coercing lowercase, uppercase, propercase, titlecase, and sentencecase variations of your provided details and querying them all against the API efficiently. To test this, you can try a `set` query with each of the following set names for the [Legend of Blue Eyes White Dragon](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) set; they should all succeed.
+This wrapper will make an attempt to resolve redirects as best as possible. It does so by coercing lowercase, uppercase, propercase, titlecase, and sentencecase variations of your provided `searchTerms`s and querying them all against the API efficiently. To test this, you can try a `set` query with each of the following set names for the [_Legend of Blue Eyes White Dragon_](https://yugipedia.com/wiki/Legend_of_Blue_Eyes_White_Dragon) set; they should all succeed.
 
 * `"lob"`
 * `"Lob"`
@@ -187,7 +231,48 @@ This wrapper will make an attempt to resolve redirects as best as possible. It d
 * `"legend_of_blue_eyes_white_dragon"`
 * `"leGEND Of Blue eyeS whitE DRaGON"`
 
-It's not infallible, unfortunately, so do try your best to make sure you spell things correctly.
+It's not infallible, unfortunately. Currently it can't handle spelling mistakes. Perhaps I add some AI to it in the future 😁🤖
+
+## Caching
+
+Data caching is handled for you. Every individual property you look up will be saved, and subsequent queries asking for that data will search the cache first before querying the API. There is a very important caveat with the way caching is handled that you should take into account. The code controlling the API requests is designed to batch all requests. As such, all of the data of the request must exist in the cache already if the cache is to be used at all, otherwise it will be ignored and refreshed. Let's visualize this:
+
+### Example:
+
+```gql
+query {
+    card(searchTerm: "Dark Magician") {
+        name {
+            english
+        }
+        stats {
+            attack
+        }
+    }
+}
+```
+
+Given the query above, I'd be getting the English name and attack properties. Now, let's say I realize I also want to get the defense stat:
+
+```gql
+query {
+    card(searchTerm: "Dark Magician") {
+        name {
+            english
+        }
+        stats {
+            attack
+            defense
+        }
+    }
+}
+```
+
+Because the defense stat doesn't exist in the cache based on our previous request the code will discard the cached data and request all of the properties from scratch.
+
+The reasoning behind this behavior lies in the program trying to be as efficient as possible. While it may sound counter-intuitive to discard pre-existing data in the name of efficiency, not doing so would actually trigger a potential cascade of granular requests trying to account for different combinations of missing data, thus increasing the number of requests to the API _and_ your wait time. By instead performing a fresh request, we're able to batch everything into a single request (sorta, this API gets weird).
+
+So, why is this useful to you? For two reasons. The first being that if you understand how the caching works, you'll be more likely to understand why sometimes your queries seem near-instantaneous and why sometimes they'll be delayed by a couple seconds. The other is if you want to tinker with the code yourself. This isn't thoroughly documented in the codebase, and I don't plan to either, so laying it out here gives you what you need.
 
 ## Errors/Warnings
 
