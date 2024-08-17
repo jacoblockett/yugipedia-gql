@@ -31,7 +31,7 @@ const getRedirects = async pageNames => {
 				if (pages.includes(version)) {
 					if (acc.find(found => found.to === version)) return acc
 
-					return [...acc, { from: version, to: version }]
+					return [...acc, { from: variants[0], to: version }]
 				}
 
 				// explicit redirects will be under the redirects value (i.e. BEWD -> Blue-Eyes White Dragon)
