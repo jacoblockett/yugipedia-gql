@@ -18,9 +18,9 @@ class Yugipedia {
 	 * @param {string} options.userAgent.name The name of your service (personal name, online alias, business entity, whatever; just make sure it's something the api devs can use to id and address you appropriately if they have concerns)
 	 * @param {string} options.userAgent.contact The best way contact you should the api devs have concerns
 	 * @param {string} [options.userAgent.reason] The reason you're accessing the api. Defaults to `"Data Collection for Personal Use [Yugipedia-GQL]"`
-	 * @param {{path?: string, ttl?: {years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number}}|false} [options.cache] The cache settings object. Set to false if you don't want caching.
+	 * @param {{path?: string, ttl?: {years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number}}|false} [options.cache] The cache settings object. Set to false if you don't want caching
 	 * @param {string} [options.cache.path] The path to the cache file. Defaults to `{cwd}/yugipedia-gql-cache`
-	 * @param {{years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number}} [options.cache.ttl] The time-to-live for each cache entry. Defaults to `{days: 30}`.
+	 * @param {{years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number}} [options.cache.ttl] The time-to-live for each cache entry. Defaults to `{days: 30}`
 	 */
 	constructor(options) {
 		if (Object.prototype.toString.call(options) !== "[object Object]") options = {}
@@ -63,6 +63,14 @@ class Yugipedia {
 		this.options = options
 	}
 
+	/**
+	 * Performs a query against the Yugipedia API with the given GraphQL query string and variables.
+	 *
+	 * @param {string} gqlQueryString The GraphQL query string
+	 * @param {{[key]: unknown}} variables The variables to use with the query
+	 *
+	 * @returns {{data: {[key]: unknown}, errors: null|[{culprit: string, code: number, log: {message: string, payload: unknown}}], warnings: null|[{culprit: string, code: number, log: {message: string, payload: unknown}}]}}
+	 */
 	async query(gqlQueryString, variables) {
 		if (typeof gqlQueryString !== "string")
 			throw new TypeError(`Expected gqlQueryString to be a string`)
