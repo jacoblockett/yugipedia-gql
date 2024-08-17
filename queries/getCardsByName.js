@@ -17,29 +17,31 @@ const getCardsByName = async (names, printouts) => {
 	// even if one printout is missing from the specific page name, its cache will be discarded and re-queried
 	// this sounds hella inefficient, but given the way these queries are set up to be batch-style requests,
 	// it's the lesser of two evil approaches
-	const { cached, unCached } = names.reduce(
-		(acc, { to: pageName }) => {
-			const cachedPrintoutObjects = findPrintouts(pageName)
-			const cachedPrintoutNames = cachedPrintoutObjects.map(x => x.printout)
+	const { cached, unCached } = !globalValues.cache
+		? { cached: [], unCached: names.map(({ to }) => to) }
+		: names.reduce(
+				(acc, { to: pageName }) => {
+					const cachedPrintoutObjects = findPrintouts(pageName)
+					const cachedPrintoutNames = cachedPrintoutObjects.map(x => x.printout)
 
-			if (printouts.every(printout => cachedPrintoutNames.includes(printout))) {
-				acc.cached.push({
-					fulltext: pageName,
-					printouts: cachedPrintoutObjects.reduce((acc, { printout, payload }) => {
-						acc[printout] = payload
+					if (printouts.every(printout => cachedPrintoutNames.includes(printout))) {
+						acc.cached.push({
+							fulltext: pageName,
+							printouts: cachedPrintoutObjects.reduce((acc, { printout, payload }) => {
+								acc[printout] = payload
 
-						return acc
-					}, {}),
-					fromCache: true,
-				})
-			} else {
-				acc.unCached.push(pageName)
-			}
+								return acc
+							}, {}),
+							fromCache: true,
+						})
+					} else {
+						acc.unCached.push(pageName)
+					}
 
-			return acc
-		},
-		{ cached: [], unCached: [] }
-	)
+					return acc
+				},
+				{ cached: [], unCached: [] }
+		  )
 
 	const data = (
 		unCached.length
@@ -62,7 +64,7 @@ const getCardsByName = async (names, printouts) => {
 			}
 
 			// add any freshly queried data to the cache before formatting
-			if (!cardData.fromCache) {
+			if (globalValues.cache && !cardData.fromCache) {
 				for (const printout of Object.entries(cardData.printouts)) {
 					insertPrintout(to, printout[0], printout[1])
 				}

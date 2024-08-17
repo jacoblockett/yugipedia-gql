@@ -67,7 +67,7 @@ export const createCache = () => {
 
 	insertRedirect = (from, to) => {
 		statements.delete.redirect.run(from)
-		statements.insert.redirect.run(from, to, add(Date.now(), { days: 30 }).getTime())
+		statements.insert.redirect.run(from, to, add(Date.now(), globalValues.cache.ttl).getTime())
 	}
 	insertPrintout = (pageName, printout, payload) => {
 		statements.delete.printout.run(pageName, printout)
@@ -75,7 +75,7 @@ export const createCache = () => {
 			pageName,
 			printout,
 			JSON.stringify(payload),
-			add(Date.now(), { days: 30 }).getTime()
+			add(Date.now(), globalValues.cache.ttl).getTime()
 		)
 	}
 	findRedirectFromVariants = variants => {
