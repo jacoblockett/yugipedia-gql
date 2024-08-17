@@ -4,7 +4,7 @@ A GraphQL wrapper around the [MediaWiki API](https://en.wikipedia.org/wiki/Media
 
 > ⚠️ This wrapper is in its early stages. As new requirements are set and the full design/structure is realized, be prepared for drastic, breaking changes on a regular basis. See the [change log](https://github.com/jacoblockett/yugipedia-gql/blob/main/CHANGELOG.md) for info on recent updates.
 
-> ⚠️ This codebase isn't always synced up with the version hosted on [NPM](https://www.npmjs.com/package/yugipedia-gql). It is likely this version of the code is ahead in features and bug fixes, but might also be less stable. Clone with optimistic caution.
+> ⚠️ The codebase on [github](https://github.com/jacoblockett/yugipedia-gql) isn't always synced up with the version hosted on [NPM](https://www.npmjs.com/package/yugipedia-gql). It is likely the github version of the code is ahead in features and bug fixes, but might also be less stable. Clone it with optimistic caution for the latest updates.
 
 ## Installation
 
