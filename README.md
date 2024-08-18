@@ -143,17 +143,17 @@ The above result should be:
 
 ```shell
 {
-	data: {
-		query: {
-			card: {
-				name: { english: 'Dark Magician', korean: { html: '블랙 매지션' } },
-				stats: { attribute: 'Dark', attack: '2500', defense: '2100' },
-				types: ['Spellcaster', 'Normal'],
-			},
-		},
-	},
-	errors: null,
-	warnings: null,
+  data: {
+    query: {
+      card: {
+        name: { english: 'Dark Magician', korean: { html: '블랙 매지션' } },
+        stats: { attribute: 'Dark', attack: '2500', defense: '2100' },
+        types: [ 'Spellcaster', 'Normal' ]
+      }
+    }
+  },
+  errors: null,
+  warnings: null
 }
 ```
 
