@@ -306,7 +306,7 @@ You may sometimes be presented with a FatalError. These errors are internal to t
 
 ## Schema
 
-Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.gql).
+Below are some helpful descriptions of various fields found on root types. The entire schema definition can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/gql/SCHEMA.gql). More detailed descriptions can be found [here](https://github.com/jacoblockett/yugipedia-gql/blob/main/docs/CARD_PRINTOUTS.md).
 
 ### ___`card(searchTerm: String!): Card <RootQuery>`___
 
