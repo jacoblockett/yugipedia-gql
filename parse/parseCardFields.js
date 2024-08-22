@@ -199,7 +199,7 @@ const parseCardFields = (info, DO_NOT_PARSE_INFO_OBJECT) => {
 		}
 		if (field === "usedBy") po.add("In Deck")
 		if (field === "appearsIn") po.add("Appears in")
-		if (field === "isReal") po.add("Non-physical card")
+		if (field === "hasPhysicalRelease") po.add("Non-physical card")
 		if (field === "charactersDepicted") po.add("Character")
 	}
 

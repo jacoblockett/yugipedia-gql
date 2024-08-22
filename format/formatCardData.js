@@ -151,15 +151,7 @@ const formatCardData = async data => {
 			front: po.cardImage?.[0] ? `${MEDIA_ENDPOINT}/${po.cardImage[0]}` : null,
 			name: po.cardImageName?.[0],
 		},
-		isReal: po.nonPhysicalCard?.[0]
-			? po.nonPhysicalCard[0] === "true"
-			: po.ocgStatus?.[0] ||
-			  po.rushDuelStatus?.[0] ||
-			  po.tcgStatus?.[0] ||
-			  po.tcgSpeedDuelStatus?.[0] ||
-			  po.tcgTraditionalFormatStatus?.[0]
-			? true
-			: false,
+		hasPhysicalRelease: po.nonPhysicalCard?.[0] === "false" ? false : true,
 		konamiID: po.databaseId?.[0],
 		limitation: po.limitationText?.[0],
 		materials: {

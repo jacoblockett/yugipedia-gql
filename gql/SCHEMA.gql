@@ -18,7 +18,7 @@ type Card {
   description: LocaleText
   effectTypes: [String!]
   image: CardImage
-  isReal: Boolean
+  hasPhysicalRelease: Boolean
   konamiID: String
   limitation: String
   materials: Materials

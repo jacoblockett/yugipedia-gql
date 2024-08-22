@@ -426,7 +426,7 @@ const Card = new GraphQLObjectType({
 		description: { type: LocaleText },
 		effectTypes: { type: NonNullInnerList(GraphQLString) },
 		image: { type: CardImage },
-		isReal: { type: GraphQLBoolean },
+		hasPhysicalRelease: { type: GraphQLBoolean },
 		konamiID: { type: GraphQLString },
 		limitation: { type: GraphQLString },
 		materials: { type: Materials },
