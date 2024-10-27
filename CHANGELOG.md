@@ -1,3 +1,17 @@
+## 8/14/2024 (v0.4.3 -> v0.5.0)
+
+### Documentation Updates
+
+Updated the README documentation, and added some more detailed documentation. While it might still be missing pieces here and there, hopefully this contains all of the necessary information to thoroughly understand the project and what it can do.
+
+### Added Caching Logic
+
+Caching is now [fully implemented](https://github.com/jacoblockett/yugipedia-gql?tab=readme-ov-file#caching) and documented.
+
+### Bug Fix
+
+The `isReal` property on `Card` queries was semantically inaccurate, leading to unexpected results. For clarity, it has been renamed to `hasPhysicalRelease`.
+
 ## 2/18/2024 (v0.4.2 -> v0.4.3)
 
 ### Improvement
